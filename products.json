@@ -1,0 +1,231 @@
+[
+  {
+    "_id": "P001",
+    "name": "Wireless Mouse",
+    "category": "Electronics",
+    "brand": "LogiPro",
+    "price": 79.99,
+    "cost": 35.0,
+    "stock": 120,
+    "tags": [
+      "computer",
+      "accessory",
+      "wireless"
+    ],
+    "active": true,
+    "rating": 4.4
+  },
+  {
+    "_id": "P002",
+    "name": "Mechanical Keyboard",
+    "category": "Electronics",
+    "brand": "KeyForge",
+    "price": 249.0,
+    "cost": 130.0,
+    "stock": 45,
+    "tags": [
+      "computer",
+      "keyboard",
+      "gaming"
+    ],
+    "active": true,
+    "rating": 4.7
+  },
+  {
+    "_id": "P003",
+    "name": "USB-C Hub",
+    "category": "Electronics",
+    "brand": "PortPlus",
+    "price": 119.5,
+    "cost": 52.0,
+    "stock": 0,
+    "tags": [
+      "computer",
+      "adapter"
+    ],
+    "active": true,
+    "rating": 4.1
+  },
+  {
+    "_id": "P004",
+    "name": "Running Shoes",
+    "category": "Fashion",
+    "brand": "Stride",
+    "price": 320.0,
+    "cost": 145.0,
+    "stock": 32,
+    "tags": [
+      "fitness",
+      "shoes",
+      "running"
+    ],
+    "active": true,
+    "rating": 4.5
+  },
+  {
+    "_id": "P005",
+    "name": "Cotton T-Shirt",
+    "category": "Fashion",
+    "brand": "Everyday",
+    "price": 49.0,
+    "cost": 12.0,
+    "stock": 250,
+    "tags": [
+      "clothing",
+      "cotton"
+    ],
+    "active": true,
+    "rating": 4.0
+  },
+  {
+    "_id": "P006",
+    "name": "Coffee Maker",
+    "category": "Home",
+    "brand": "BrewMate",
+    "price": 189.99,
+    "cost": 95.0,
+    "stock": 18,
+    "tags": [
+      "kitchen",
+      "coffee"
+    ],
+    "active": true,
+    "rating": 4.3
+  },
+  {
+    "_id": "P007",
+    "name": "Desk Lamp",
+    "category": "Home",
+    "brand": "BrightNest",
+    "price": 89.0,
+    "cost": 30.0,
+    "stock": 67,
+    "tags": [
+      "office",
+      "lighting"
+    ],
+    "active": true,
+    "rating": 3.9
+  },
+  {
+    "_id": "P008",
+    "name": "Yoga Mat",
+    "category": "Fitness",
+    "brand": "FlexFit",
+    "price": 99.0,
+    "cost": 28.0,
+    "stock": 90,
+    "tags": [
+      "fitness",
+      "yoga"
+    ],
+    "active": true,
+    "rating": 4.6
+  },
+  {
+    "_id": "P009",
+    "name": "Water Bottle",
+    "category": "Fitness",
+    "brand": "Hydra",
+    "price": 35.0,
+    "cost": 8.0,
+    "stock": 300,
+    "tags": [
+      "fitness",
+      "reusable"
+    ],
+    "active": true,
+    "rating": 4.2
+  },
+  {
+    "_id": "P010",
+    "name": "Noise Cancelling Headphones",
+    "category": "Electronics",
+    "brand": "SonicPeak",
+    "price": 599.0,
+    "cost": 310.0,
+    "stock": 14,
+    "tags": [
+      "audio",
+      "wireless",
+      "travel"
+    ],
+    "active": true,
+    "rating": 4.8
+  },
+  {
+    "_id": "P011",
+    "name": "Travel Backpack",
+    "category": "Fashion",
+    "brand": "Roam",
+    "price": 175.0,
+    "cost": 70.0,
+    "stock": 0,
+    "tags": [
+      "travel",
+      "bag"
+    ],
+    "active": false,
+    "rating": 4.1
+  },
+  {
+    "_id": "P012",
+    "name": "Monitor Stand",
+    "category": "Electronics",
+    "brand": "DeskFlow",
+    "price": 139.0,
+    "cost": 60.0,
+    "stock": 24,
+    "tags": [
+      "computer",
+      "office"
+    ],
+    "active": true,
+    "rating": 4.0
+  },
+  {
+    "_id": "P013",
+    "name": "Blender",
+    "category": "Home",
+    "brand": "BrewMate",
+    "price": 159.0,
+    "cost": 82.0,
+    "stock": 9,
+    "tags": [
+      "kitchen",
+      "appliance"
+    ],
+    "active": true,
+    "rating": 3.8
+  },
+  {
+    "_id": "P014",
+    "name": "Dumbbell Set",
+    "category": "Fitness",
+    "brand": "FlexFit",
+    "price": 210.0,
+    "cost": 105.0,
+    "stock": 21,
+    "tags": [
+      "fitness",
+      "strength"
+    ],
+    "active": true,
+    "rating": 4.5
+  },
+  {
+    "_id": "P015",
+    "name": "Notebook Pack",
+    "category": "Stationery",
+    "brand": "PaperTrail",
+    "price": 22.5,
+    "cost": 6.0,
+    "stock": 500,
+    "tags": [
+      "office",
+      "paper"
+    ],
+    "active": true,
+    "rating": 4.2
+  }
+]

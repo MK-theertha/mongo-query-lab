@@ -1,0 +1,109 @@
+[
+  {
+    "_id": "E001",
+    "name": "Mariam Saleh",
+    "department": "Engineering",
+    "title": "Senior Engineer",
+    "salary": 18000,
+    "managerId": null,
+    "skills": [
+      "Node.js",
+      "MongoDB",
+      "AWS"
+    ],
+    "hireDate": {
+      "$date": "2021-02-01T00:00:00Z"
+    }
+  },
+  {
+    "_id": "E002",
+    "name": "Ravi Kumar",
+    "department": "Engineering",
+    "title": "Software Engineer",
+    "salary": 12500,
+    "managerId": "E001",
+    "skills": [
+      "React",
+      "Node.js",
+      "MongoDB"
+    ],
+    "hireDate": {
+      "$date": "2022-06-15T00:00:00Z"
+    }
+  },
+  {
+    "_id": "E003",
+    "name": "Layla Ahmed",
+    "department": "Engineering",
+    "title": "QA Engineer",
+    "salary": 11000,
+    "managerId": "E001",
+    "skills": [
+      "Testing",
+      "JavaScript"
+    ],
+    "hireDate": {
+      "$date": "2023-01-09T00:00:00Z"
+    }
+  },
+  {
+    "_id": "E004",
+    "name": "Yusuf Karim",
+    "department": "Sales",
+    "title": "Sales Lead",
+    "salary": 15000,
+    "managerId": null,
+    "skills": [
+      "Negotiation",
+      "CRM"
+    ],
+    "hireDate": {
+      "$date": "2020-08-20T00:00:00Z"
+    }
+  },
+  {
+    "_id": "E005",
+    "name": "Nina Thomas",
+    "department": "Sales",
+    "title": "Sales Executive",
+    "salary": 9000,
+    "managerId": "E004",
+    "skills": [
+      "CRM",
+      "Communication"
+    ],
+    "hireDate": {
+      "$date": "2023-03-01T00:00:00Z"
+    }
+  },
+  {
+    "_id": "E006",
+    "name": "Sam Wilson",
+    "department": "Marketing",
+    "title": "Marketing Analyst",
+    "salary": 10500,
+    "managerId": null,
+    "skills": [
+      "Analytics",
+      "SEO"
+    ],
+    "hireDate": {
+      "$date": "2022-11-14T00:00:00Z"
+    }
+  },
+  {
+    "_id": "E007",
+    "name": "Ibrahim Ali",
+    "department": "Support",
+    "title": "Support Agent",
+    "salary": 7500,
+    "managerId": null,
+    "skills": [
+      "Support",
+      "Communication"
+    ],
+    "hireDate": {
+      "$date": "2024-01-08T00:00:00Z"
+    }
+  }
+]

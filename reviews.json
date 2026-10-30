@@ -1,0 +1,122 @@
+[
+  {
+    "_id": "R001",
+    "productId": "P001",
+    "customerId": "C001",
+    "rating": 5,
+    "comment": "Reliable and easy to use",
+    "createdAt": {
+      "$date": "2025-01-12T12:00:00Z"
+    }
+  },
+  {
+    "_id": "R002",
+    "productId": "P002",
+    "customerId": "C004",
+    "rating": 5,
+    "comment": "Great typing feel",
+    "createdAt": {
+      "$date": "2025-01-15T12:00:00Z"
+    }
+  },
+  {
+    "_id": "R003",
+    "productId": "P004",
+    "customerId": "C002",
+    "rating": 4,
+    "comment": "Comfortable for running",
+    "createdAt": {
+      "$date": "2025-02-03T12:00:00Z"
+    }
+  },
+  {
+    "_id": "R004",
+    "productId": "P006",
+    "customerId": "C003",
+    "rating": 3,
+    "comment": "Works fine but noisy",
+    "createdAt": {
+      "$date": "2025-02-18T12:00:00Z"
+    }
+  },
+  {
+    "_id": "R005",
+    "productId": "P010",
+    "customerId": "C006",
+    "rating": 5,
+    "comment": "Excellent sound quality",
+    "createdAt": {
+      "$date": "2025-03-10T12:00:00Z"
+    }
+  },
+  {
+    "_id": "R006",
+    "productId": "P001",
+    "customerId": "C008",
+    "rating": 4,
+    "comment": "Good value",
+    "createdAt": {
+      "$date": "2025-03-14T12:00:00Z"
+    }
+  },
+  {
+    "_id": "R007",
+    "productId": "P009",
+    "customerId": "C010",
+    "rating": 4,
+    "comment": "Useful bottle",
+    "createdAt": {
+      "$date": "2025-04-01T12:00:00Z"
+    }
+  },
+  {
+    "_id": "R008",
+    "productId": "P008",
+    "customerId": "C005",
+    "rating": 5,
+    "comment": "Perfect for home workouts",
+    "createdAt": {
+      "$date": "2025-04-22T12:00:00Z"
+    }
+  },
+  {
+    "_id": "R009",
+    "productId": "P003",
+    "customerId": "C009",
+    "rating": 2,
+    "comment": "Stopped working quickly",
+    "createdAt": {
+      "$date": "2025-05-04T12:00:00Z"
+    }
+  },
+  {
+    "_id": "R010",
+    "productId": "P013",
+    "customerId": "C011",
+    "rating": 3,
+    "comment": "Average performance",
+    "createdAt": {
+      "$date": "2025-05-20T12:00:00Z"
+    }
+  },
+  {
+    "_id": "R011",
+    "productId": "P002",
+    "customerId": "C012",
+    "rating": 4,
+    "comment": "Solid keyboard",
+    "createdAt": {
+      "$date": "2025-06-06T12:00:00Z"
+    }
+  },
+  {
+    "_id": "R012",
+    "productId": "P014",
+    "customerId": "C007",
+    "rating": 5,
+    "comment": "Good quality weights",
+    "createdAt": {
+      "$date": "2025-06-19T12:00:00Z"
+    }
+  }
+]

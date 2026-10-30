@@ -1,0 +1,146 @@
+[
+  {
+    "_id": "C001",
+    "name": "Aisha Rahman",
+    "email": "aisha@example.com",
+    "city": "Dubai",
+    "country": "UAE",
+    "joinedAt": {
+      "$date": "2024-01-15T10:00:00Z"
+    },
+    "status": "active",
+    "loyaltyTier": "gold"
+  },
+  {
+    "_id": "C002",
+    "name": "Omar Hassan",
+    "email": "omar@example.com",
+    "city": "Abu Dhabi",
+    "country": "UAE",
+    "joinedAt": {
+      "$date": "2024-02-20T10:00:00Z"
+    },
+    "status": "active",
+    "loyaltyTier": "silver"
+  },
+  {
+    "_id": "C003",
+    "name": "Maya Nair",
+    "email": "maya@example.com",
+    "city": "Sharjah",
+    "country": "UAE",
+    "joinedAt": {
+      "$date": "2024-03-12T10:00:00Z"
+    },
+    "status": "inactive",
+    "loyaltyTier": "bronze"
+  },
+  {
+    "_id": "C004",
+    "name": "Arjun Menon",
+    "email": "arjun@example.com",
+    "city": "Dubai",
+    "country": "UAE",
+    "joinedAt": {
+      "$date": "2024-04-05T10:00:00Z"
+    },
+    "status": "active",
+    "loyaltyTier": "gold"
+  },
+  {
+    "_id": "C005",
+    "name": "Sara Khan",
+    "email": "sara@example.com",
+    "city": "Ajman",
+    "country": "UAE",
+    "joinedAt": {
+      "$date": "2024-05-18T10:00:00Z"
+    },
+    "status": "active",
+    "loyaltyTier": "silver"
+  },
+  {
+    "_id": "C006",
+    "name": "Noah Williams",
+    "email": "noah@example.com",
+    "city": "London",
+    "country": "UK",
+    "joinedAt": {
+      "$date": "2024-06-01T10:00:00Z"
+    },
+    "status": "active",
+    "loyaltyTier": "gold"
+  },
+  {
+    "_id": "C007",
+    "name": "Priya Shah",
+    "email": "priya@example.com",
+    "city": "Dubai",
+    "country": "UAE",
+    "joinedAt": {
+      "$date": "2024-06-22T10:00:00Z"
+    },
+    "status": "inactive",
+    "loyaltyTier": "bronze"
+  },
+  {
+    "_id": "C008",
+    "name": "Zain Ali",
+    "email": "zain@example.com",
+    "city": "Abu Dhabi",
+    "country": "UAE",
+    "joinedAt": {
+      "$date": "2024-07-11T10:00:00Z"
+    },
+    "status": "active",
+    "loyaltyTier": "silver"
+  },
+  {
+    "_id": "C009",
+    "name": "Lina Joseph",
+    "email": "lina@example.com",
+    "city": "Doha",
+    "country": "Qatar",
+    "joinedAt": {
+      "$date": "2024-08-09T10:00:00Z"
+    },
+    "status": "active",
+    "loyaltyTier": "gold"
+  },
+  {
+    "_id": "C010",
+    "name": "Ethan Brown",
+    "email": "ethan@example.com",
+    "city": "Dubai",
+    "country": "UAE",
+    "joinedAt": {
+      "$date": "2024-09-02T10:00:00Z"
+    },
+    "status": "active",
+    "loyaltyTier": "bronze"
+  },
+  {
+    "_id": "C011",
+    "name": "Fatima Noor",
+    "email": "fatima@example.com",
+    "city": "Sharjah",
+    "country": "UAE",
+    "joinedAt": {
+      "$date": "2024-09-21T10:00:00Z"
+    },
+    "status": "active",
+    "loyaltyTier": "silver"
+  },
+  {
+    "_id": "C012",
+    "name": "Daniel Kim",
+    "email": "daniel@example.com",
+    "city": "Singapore",
+    "country": "Singapore",
+    "joinedAt": {
+      "$date": "2024-10-17T10:00:00Z"
+    },
+    "status": "active",
+    "loyaltyTier": "gold"
+  }
+]

@@ -1,0 +1,1828 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>MongoDB Field Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: fixed contents rail on the left, one tutorial page at a time on the right, prev/next at the foot. Collapses to a top bar on phones. */
+:root{
+  --bg:#f5f7f3; --panel:#ffffff; --fg:#17211b; --muted:#5b6a60; --line:#dde4dc;
+  --accent:#17734a; --accent-soft:#e2f0e7; --warn:#8a5a00; --warn-soft:#fbf1dc;
+  --code-bg:#13201a; --code-fg:#dbe7de; --c-com:#7f9587; --c-str:#e9c27a; --c-field:#8fd3a9; --c-op:#7cc4f5; --c-num:#f29e8e; --c-kw:#d4a6f0; --c-fn:#f0e08a;
+  --out-bg:#eef3ee;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1512; --panel:#151d18; --fg:#e3ebe5; --muted:#93a399; --line:#26312a;
+  --accent:#5cc58f; --accent-soft:#183325; --warn:#e8b65a; --warn-soft:#2c2414;
+  --code-bg:#0a100d; --out-bg:#18221c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1512; --panel:#151d18; --fg:#e3ebe5; --muted:#93a399; --line:#26312a;
+  --accent:#5cc58f; --accent-soft:#183325; --warn:#e8b65a; --warn-soft:#2c2414;
+  --code-bg:#0a100d; --out-bg:#18221c; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.6}
+a{color:var(--accent)}
+.shell{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100vh}
+
+/* sidebar */
+.side{position:sticky;top:0;height:100vh;overflow-y:auto;border-right:1px solid var(--line);background:var(--panel);padding:22px 18px 40px max(18px, env(safe-area-inset-left,0px))}
+.brand{display:flex;align-items:baseline;gap:8px;margin-bottom:16px}
+.brand b{font-family:var(--f-display);font-size:1.35rem;font-weight:700;letter-spacing:-.01em}
+.brand span{font-family:var(--f-mono);font-size:.7rem;color:var(--muted)}
+.search{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:.95rem}
+.search:focus{outline:2px solid var(--accent);outline-offset:1px}
+.navgroup{margin-top:20px}
+.navgroup h4{margin:0 0 6px;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.navgroup a{display:flex;gap:10px;padding:5px 8px;border-radius:6px;color:var(--fg);text-decoration:none;font-size:.95rem;line-height:1.35}
+.navgroup a .n{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);min-width:1.6em;padding-top:.15em;font-variant-numeric:tabular-nums}
+.navgroup a:hover{background:var(--accent-soft)}
+.navgroup a.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.navgroup a:focus-visible{outline:2px solid var(--accent)}
+.empty{color:var(--muted);font-size:.9rem;margin-top:16px}
+
+/* main */
+main{min-width:0;padding-block:40px 80px;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+.page{max-width:800px;margin:0 auto}
+.crumb{font-family:var(--f-mono);font-size:.75rem;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.page h1{font-family:var(--f-display);font-weight:700;font-size:clamp(2rem,4vw,2.7rem);line-height:1.1;letter-spacing:-.02em;margin:.25em 0 .4em;text-wrap:balance}
+.page h2{font-family:var(--f-display);font-weight:700;font-size:1.45rem;margin:2.2em 0 .5em;padding-top:.6em;border-top:1px solid var(--line);text-wrap:balance}
+.page h3{font-size:1.1rem;margin:1.6em 0 .3em}
+.page h3 code{font-size:.95em}
+.lead{font-size:1.15rem;color:var(--muted);max-width:62ch}
+.page p,.page li{max-width:68ch}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--accent-soft);color:var(--fg);padding:.08em .35em;border-radius:4px}
+.block{position:relative;margin:1em 0}
+pre{margin:0;overflow-x:auto;border-radius:10px;padding:16px 18px;font-family:var(--f-mono);font-size:.84rem;line-height:1.6}
+pre.code{background:var(--code-bg);color:var(--code-fg)}
+pre.code code{background:none;padding:0;color:inherit;font-size:inherit}
+pre.out{background:var(--out-bg);color:var(--fg);border:1px dashed var(--line);margin-top:-4px}
+.outlabel{font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:10px 0 4px}
+.copy{position:absolute;top:8px;right:8px;font:600 .72rem var(--f-mono);padding:4px 9px;border-radius:6px;border:1px solid #ffffff2a;background:#ffffff14;color:var(--code-fg);cursor:pointer}
+.copy:hover{background:#ffffff26}
+.copy:focus-visible{outline:2px solid var(--c-field)}
+.t-com{color:var(--c-com);font-style:italic}.t-str{color:var(--c-str)}.t-field{color:var(--c-field)}.t-op{color:var(--c-op)}.t-num{color:var(--c-num)}.t-kw{color:var(--c-kw)}.t-fn{color:var(--c-fn)}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 8px 8px 0;margin:1.2em 0}
+.note.warn{border-color:var(--warn);background:var(--warn-soft)}
+.note p{margin:.2em 0}
+.tbl{overflow-x:auto;margin:1em 0;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--panel);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td code{white-space:nowrap}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:.8em 0;background:var(--panel)}
+summary{cursor:pointer;font-weight:600}
+details[open] summary{margin-bottom:6px}
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:56px}
+.pager a{display:block;padding:14px 16px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--fg);background:var(--panel)}
+.pager a:hover{border-color:var(--accent)}
+.pager small{display:block;font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.pager .next{text-align:right;grid-column:2}
+.topbar{display:none}
+
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding-block:10px;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+  .topbar b{font-family:var(--f-display);font-size:1.1rem}
+  .topbar button{font:600 .9rem var(--f-body);padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+  .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding-right:max(16px, env(safe-area-inset-right,0px))}
+  .side.closed{display:none}
+  .brand{display:none}
+  main{padding-block:24px 60px}
+  body{font-size:16px}
+}
+@media (prefers-reduced-motion:no-preference){.page{animation:fade .18s ease-out}@keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
+</style>
+
+<div class="topbar"><b>MongoDB Field Guide</b><button id="toggle" type="button" aria-expanded="false" aria-controls="side">Contents</button></div>
+<div class="shell">
+  <nav class="side closed" id="side" aria-label="Contents">
+    <div class="brand"><b>MongoDB Field Guide</b><span>mongosh · 8.x</span></div>
+    <input class="search" id="q" type="search" placeholder="Search pages or operators, e.g. $lookup" aria-label="Search">
+    <div id="nav"></div>
+  </nav>
+  <main><article class="page" id="page"></article></main>
+</div>
+
+<!-- ======================= PAGES ======================= -->
+
+<template id="intro" data-group="Getting started" data-title="Introduction & mongosh">
+<p class="lead">MongoDB stores data as JSON-like documents grouped into collections. This guide walks through every everyday operation and the full aggregation toolkit, one topic per page, using the same small shop database throughout.</p>
+<h2>Core ideas</h2>
+<div class="tbl"><table>
+<tr><th>SQL term</th><th>MongoDB term</th><th>Notes</th></tr>
+<tr><td>Database</td><td>Database</td><td>Created automatically on first write.</td></tr>
+<tr><td>Table</td><td>Collection</td><td>No fixed schema unless you add validation.</td></tr>
+<tr><td>Row</td><td>Document</td><td>Stored as BSON. Max size 16 MB.</td></tr>
+<tr><td>Column</td><td>Field</td><td>Fields can hold arrays and nested documents.</td></tr>
+<tr><td>Primary key</td><td><code>_id</code></td><td>Added automatically as an ObjectId if you omit it.</td></tr>
+<tr><td>JOIN</td><td><code>$lookup</code> / embedding</td><td>Embed data you read together; reference data you share.</td></tr>
+</table></div>
+<h2>Connecting with mongosh</h2>
+<p>All examples run in <code>mongosh</code>, the MongoDB shell. Connect to a local server or an Atlas cluster:</p>
+<pre class="code">// local server on the default port 27017
+mongosh
+
+// Atlas or remote server
+mongosh "mongodb+srv://cluster0.example.mongodb.net/" --username alice</pre>
+<h2>Database and collection commands</h2>
+<pre class="code">show dbs                       // list databases
+use shop                       // switch to (or create) the "shop" database
+db                             // print the current database name
+show collections               // list collections in the current database
+
+db.createCollection("products")             // create explicitly (optional)
+db.createCollection("logs", { capped: true, size: 1048576 })  // fixed-size collection
+
+db.products.renameCollection("items")       // rename
+db.items.drop()                             // delete a collection
+db.dropDatabase()                           // delete the current database
+
+db.stats()                                  // database statistics
+db.products.stats()                         // collection statistics</pre>
+<h2>BSON data types you will meet</h2>
+<pre class="code">{
+  name:    "Desk Lamp",                       // String
+  price:   45,                                // Int32 / Double
+  exact:   NumberDecimal("45.90"),            // Decimal128 for money
+  inStock: true,                              // Boolean
+  added:   ISODate("2026-03-01T10:00:00Z"),   // Date
+  tags:    ["lighting", "home"],              // Array
+  specs:   { watts: 9, color: "black" },      // Embedded document
+  owner:   ObjectId("6650f1a2c3d4e5f601234567"), // ObjectId
+  note:    null                               // Null
+}</pre>
+<div class="note"><p><b>How to read this guide.</b> Dark blocks are commands you can paste into mongosh. Lighter dashed blocks underneath labelled “Result” show what the sample data returns.</p></div>
+</template>
+
+<template id="dataset" data-group="Getting started" data-title="Sample dataset">
+<p class="lead">Paste this once. Every later example queries these three collections, so you can compare your output with the results shown.</p>
+<h2>products</h2>
+<pre class="code">use shop
+
+db.products.insertMany([
+  { _id: 1, name: "Espresso Machine", category: "kitchen", price: 249, stock: 12,
+    tags: ["coffee", "appliance"], ratings: [5, 4, 5], specs: { brand: "Brava", watts: 1350 } },
+  { _id: 2, name: "Chef Knife", category: "kitchen", price: 89, stock: 40,
+    tags: ["cutlery"], ratings: [5, 5, 4, 5], specs: { brand: "Kato" } },
+  { _id: 3, name: "Coffee Beans 1kg", category: "grocery", price: 18, stock: 200,
+    tags: ["coffee", "organic"], ratings: [4, 3, 5] },
+  { _id: 4, name: "Desk Lamp", category: "home", price: 45, stock: 0,
+    tags: ["lighting"], ratings: [3, 4] },
+  { _id: 5, name: "Wireless Mouse", category: "electronics", price: 29, stock: 75,
+    tags: ["computer", "wireless"], ratings: [4, 4, 5, 3] },
+  { _id: 6, name: "Noise-Cancelling Headphones", category: "electronics", price: 199, stock: 8,
+    tags: ["audio", "wireless"], ratings: [5, 4] }
+])</pre>
+<h2>customers</h2>
+<pre class="code">db.customers.insertMany([
+  { _id: "c1", name: "Aisha Khan",  email: "aisha@example.com", city: "Dubai", tier: "gold",   joined: ISODate("2024-03-14") },
+  { _id: "c2", name: "Marco Rossi", email: "marco@example.com", city: "Milan", tier: "silver", joined: ISODate("2025-01-20") },
+  { _id: "c3", name: "Lena Park",   email: "lena@example.com",  city: "Seoul", tier: "gold",   joined: ISODate("2023-11-02") },
+  { _id: "c4", name: "Omar Haddad", email: "omar@example.com",  city: "Dubai", tier: "bronze", joined: ISODate("2026-02-11") }
+])</pre>
+<h2>orders</h2>
+<pre class="code">db.orders.insertMany([
+  { _id: 101, customerId: "c1", date: ISODate("2026-01-05"), status: "shipped",
+    items: [ { productId: 1, qty: 1, price: 249 }, { productId: 3, qty: 2, price: 18 } ], total: 285 },
+  { _id: 102, customerId: "c2", date: ISODate("2026-01-18"), status: "delivered",
+    items: [ { productId: 5, qty: 2, price: 29 } ], total: 58 },
+  { _id: 103, customerId: "c1", date: ISODate("2026-02-02"), status: "delivered",
+    items: [ { productId: 6, qty: 1, price: 199 } ], total: 199 },
+  { _id: 104, customerId: "c3", date: ISODate("2026-02-14"), status: "pending",
+    items: [ { productId: 2, qty: 1, price: 89 }, { productId: 3, qty: 3, price: 18 } ], total: 143 },
+  { _id: 105, customerId: "c4", date: ISODate("2026-03-01"), status: "cancelled",
+    items: [ { productId: 4, qty: 1, price: 45 } ], total: 45 },
+  { _id: 106, customerId: "c3", date: ISODate("2026-03-09"), status: "shipped",
+    items: [ { productId: 1, qty: 1, price: 249 }, { productId: 5, qty: 1, price: 29 } ], total: 278 }
+])</pre>
+<div class="note"><p><b>Reset any time:</b> run <code>db.dropDatabase()</code> while in <code>shop</code>, then paste the three blocks again. Update and delete pages change the data.</p></div>
+</template>
+
+<!-- CRUD -->
+<template id="insert" data-group="CRUD operations" data-title="Create: inserting documents">
+<p class="lead">Two methods add documents: <code>insertOne</code> for a single document and <code>insertMany</code> for an array.</p>
+<h2><code>insertOne()</code></h2>
+<pre class="code">db.products.insertOne({
+  name: "French Press",
+  category: "kitchen",
+  price: 35,
+  stock: 20,
+  tags: ["coffee"]
+})</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ acknowledged: true, insertedId: ObjectId("6716a0c2f1e4b2a9c3d10f01") }</pre>
+<p>No <code>_id</code> was given, so MongoDB generated an ObjectId. An ObjectId embeds its creation time:</p>
+<pre class="code">ObjectId("6716a0c2f1e4b2a9c3d10f01").getTimestamp()</pre>
+<h2><code>insertMany()</code></h2>
+<pre class="code">db.products.insertMany([
+  { name: "Milk Frother", category: "kitchen", price: 22, stock: 15 },
+  { name: "USB-C Hub",    category: "electronics", price: 39, stock: 30 }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ acknowledged: true, insertedIds: { '0': ObjectId("..."), '1': ObjectId("...") } }</pre>
+<h3>Ordered vs unordered</h3>
+<p>By default inserts are <b>ordered</b>: the first error stops the batch. With <code>ordered: false</code> MongoDB keeps going and reports all errors at the end.</p>
+<pre class="code">db.products.insertMany(
+  [ { _id: 1, name: "Duplicate" },     // fails: _id 1 already exists
+    { _id: 50, name: "Tea Kettle" } ], // still inserted with ordered:false
+  { ordered: false }
+)</pre>
+<h2>Write concern</h2>
+<p>Control how many replica-set members must confirm the write before it returns.</p>
+<pre class="code">db.orders.insertOne(
+  { _id: 107, customerId: "c2", status: "pending", items: [], total: 0 },
+  { writeConcern: { w: "majority", wtimeout: 5000 } }
+)</pre>
+<h2>Schema validation (optional)</h2>
+<p>Collections are flexible, but you can enforce rules with <code>$jsonSchema</code>:</p>
+<pre class="code">db.createCollection("reviews", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["productId", "stars"],
+      properties: {
+        productId: { bsonType: "int" },
+        stars:     { bsonType: "int", minimum: 1, maximum: 5 },
+        comment:   { bsonType: "string", maxLength: 500 }
+      }
+    }
+  },
+  validationAction: "error"     // or "warn"
+})
+
+db.reviews.insertOne({ productId: 1, stars: 9 })   // rejected: stars above 5</pre>
+</template>
+
+<template id="find" data-group="CRUD operations" data-title="Read: find, projection, sort">
+<p class="lead"><code>find(filter, projection)</code> returns a cursor of matching documents. <code>findOne()</code> returns the first match or <code>null</code>.</p>
+<h2>Basic queries</h2>
+<pre class="code">db.products.find()                              // every document
+db.products.find({ category: "kitchen" })       // equality match
+db.products.findOne({ _id: 3 })                 // single document
+db.products.find({ "specs.brand": "Brava" })    // nested field: use dot notation in quotes
+db.products.find({ category: "electronics", stock: { $gt: 10 } })  // several conditions = AND</pre>
+<div class="outlabel">Result of the last query</div>
+<pre class="out">{ _id: 5, name: 'Wireless Mouse', category: 'electronics', price: 29, stock: 75, ... }</pre>
+<h2>Projection: choosing fields</h2>
+<p>The second argument lists fields to include (<code>1</code>) or exclude (<code>0</code>). Don't mix the two, except for <code>_id</code>.</p>
+<pre class="code">db.products.find({}, { name: 1, price: 1 })          // name, price and _id
+db.products.find({}, { name: 1, price: 1, _id: 0 })  // drop _id
+db.products.find({}, { ratings: 0, specs: 0 })       // everything except these
+db.products.find({}, { "specs.brand": 1 })           // nested field</pre>
+<div class="outlabel">Result of the second query</div>
+<pre class="out">{ name: 'Espresso Machine', price: 249 }
+{ name: 'Chef Knife', price: 89 }
+{ name: 'Coffee Beans 1kg', price: 18 }
+{ name: 'Desk Lamp', price: 45 }
+{ name: 'Wireless Mouse', price: 29 }
+{ name: 'Noise-Cancelling Headphones', price: 199 }</pre>
+<h2>Sort, limit, skip</h2>
+<pre class="code">db.products.find().sort({ price: -1 })                 // -1 descending, 1 ascending
+db.products.find().sort({ category: 1, price: -1 })    // multi-key sort
+db.products.find().sort({ price: -1 }).limit(3)        // top 3 most expensive
+db.products.find().sort({ _id: 1 }).skip(2).limit(2)   // page 2 with page size 2</pre>
+<div class="outlabel">Result: top 3 by price</div>
+<pre class="out">{ _id: 1, name: 'Espresso Machine', price: 249, ... }
+{ _id: 6, name: 'Noise-Cancelling Headphones', price: 199, ... }
+{ _id: 2, name: 'Chef Knife', price: 89, ... }</pre>
+<div class="note"><p>MongoDB always applies <b>sort → skip → limit</b> in that order, whatever order you chain them.</p></div>
+<h2>Counting and distinct values</h2>
+<pre class="code">db.products.countDocuments({ category: "kitchen" })   // 2  (exact, accepts a filter)
+db.products.estimatedDocumentCount()                   // 6  (fast, from metadata)
+db.products.distinct("category")                       // [ 'electronics', 'grocery', 'home', 'kitchen' ]
+db.orders.distinct("customerId", { status: "shipped" })// [ 'c1', 'c3' ]</pre>
+<h2>Working with cursors</h2>
+<pre class="code">const cur = db.products.find({ price: { $lt: 100 } })
+cur.hasNext()                 // true
+cur.next()                    // the next document
+cur.toArray()                 // remaining documents as an array
+db.products.find().forEach(p =&gt; print(p.name + ": " + p.price))
+db.products.find().map(p =&gt; p.name)
+
+db.products.find().batchSize(2)       // documents per network round trip
+db.products.find().maxTimeMS(500)     // abort if slower than 500 ms
+db.products.find().collation({ locale: "en", strength: 2 })  // case-insensitive comparison</pre>
+</template>
+
+<template id="query-ops" data-group="CRUD operations" data-title="Query operators">
+<p class="lead">Query operators start with <code>$</code> and go inside the filter. They work the same way in <code>find</code>, <code>updateX</code>, <code>deleteX</code> and the <code>$match</code> aggregation stage.</p>
+<h2>Comparison operators</h2>
+<div class="tbl"><table>
+<tr><th>Operator</th><th>Meaning</th><th>Example</th></tr>
+<tr><td><code>$eq</code></td><td>equal</td><td><code>{ price: { $eq: 45 } }</code></td></tr>
+<tr><td><code>$ne</code></td><td>not equal</td><td><code>{ status: { $ne: "cancelled" } }</code></td></tr>
+<tr><td><code>$gt</code> / <code>$gte</code></td><td>greater than / or equal</td><td><code>{ price: { $gte: 100 } }</code></td></tr>
+<tr><td><code>$lt</code> / <code>$lte</code></td><td>less than / or equal</td><td><code>{ stock: { $lte: 10 } }</code></td></tr>
+<tr><td><code>$in</code></td><td>matches any value in a list</td><td><code>{ category: { $in: ["home", "grocery"] } }</code></td></tr>
+<tr><td><code>$nin</code></td><td>matches none of the list</td><td><code>{ status: { $nin: ["cancelled", "pending"] } }</code></td></tr>
+</table></div>
+<pre class="code">// products priced between 30 and 200 (inclusive)
+db.products.find({ price: { $gte: 30, $lte: 200 } }, { name: 1, price: 1, _id: 0 })</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ name: 'Chef Knife', price: 89 }
+{ name: 'Desk Lamp', price: 45 }
+{ name: 'Noise-Cancelling Headphones', price: 199 }</pre>
+<h2>Logical operators</h2>
+<pre class="code">// $or: kitchen items OR anything out of stock
+db.products.find({ $or: [ { category: "kitchen" }, { stock: 0 } ] })
+
+// $and: needed when you repeat the same field or combine two $or clauses
+db.products.find({ $and: [
+  { $or: [ { price: { $lt: 30 } }, { price: { $gt: 150 } } ] },
+  { $or: [ { tags: "coffee" }, { tags: "wireless" } ] }
+] })
+
+// $not: inverts one operator expression (also matches docs where the field is missing)
+db.products.find({ price: { $not: { $gt: 100 } } })
+
+// $nor: none of the conditions are true
+db.orders.find({ $nor: [ { status: "cancelled" }, { total: { $lt: 100 } } ] })</pre>
+<div class="outlabel">Result of $nor (order _id values)</div>
+<pre class="out">101, 103, 104, 106</pre>
+<h2>Element operators</h2>
+<pre class="code">db.products.find({ specs: { $exists: true } })        // documents that have a specs field
+db.products.find({ "specs.watts": { $exists: false } })// no watts value
+db.products.find({ price: { $type: "number" } })       // any numeric type
+db.products.find({ _id: { $type: ["int", "double"] } })// several BSON types</pre>
+<h2>Evaluation operators</h2>
+<h3><code>$regex</code>: pattern match</h3>
+<pre class="code">db.products.find({ name: { $regex: "^c", $options: "i" } })   // starts with c, case-insensitive
+db.products.find({ name: /coffee/i })                          // regex literal shorthand
+db.customers.find({ email: { $regex: "@example\\.com$" } })</pre>
+<div class="outlabel">Result of first query (names)</div>
+<pre class="out">Chef Knife, Coffee Beans 1kg</pre>
+<h3><code>$expr</code>: compare fields with each other</h3>
+<p><code>$expr</code> lets a filter use aggregation expressions, so you can compare two fields in the same document.</p>
+<pre class="code">// products where price is more than 10x the stock count
+db.products.find({ $expr: { $gt: [ "$price", { $multiply: ["$stock", 10] } ] } })</pre>
+<div class="outlabel">Result (names)</div>
+<pre class="out">Espresso Machine, Desk Lamp, Noise-Cancelling Headphones</pre>
+<h3><code>$mod</code>, <code>$text</code>, <code>$jsonSchema</code>, <code>$where</code></h3>
+<pre class="code">db.orders.find({ _id: { $mod: [2, 0] } })      // even order numbers: 102, 104, 106
+
+// $text needs a text index (see the Indexes page)
+db.products.createIndex({ name: "text" })
+db.products.find({ $text: { $search: "coffee espresso" } })
+
+// find documents that do NOT match a schema
+db.products.find({ $nor: [ { $jsonSchema: { required: ["specs"] } } ] })
+
+// $where runs JavaScript per document. It is slow; prefer $expr.
+db.products.find({ $where: "this.ratings.length &gt; 3" })</pre>
+<div class="note warn"><p><b>Common mistake:</b> <code>{ price: { $gt: 10 }, price: { $lt: 50 } }</code> keeps only the last key in JavaScript. Put both in one object: <code>{ price: { $gt: 10, $lt: 50 } }</code>.</p></div>
+</template>
+
+<template id="array-queries" data-group="CRUD operations" data-title="Querying arrays & embedded docs">
+<p class="lead">Arrays are first-class in MongoDB. A plain equality filter on an array field matches if <b>any</b> element matches.</p>
+<h2>Matching values inside an array</h2>
+<pre class="code">db.products.find({ tags: "coffee" })                     // any element equals "coffee"
+db.products.find({ tags: ["coffee", "organic"] })        // exact array, same order
+db.products.find({ tags: { $all: ["wireless", "audio"] } })  // contains all, any order
+db.products.find({ tags: { $size: 1 } })                 // arrays with exactly 1 element
+db.products.find({ "tags.0": "coffee" })                 // first element is "coffee"</pre>
+<div class="outlabel">Results</div>
+<pre class="out">tags: "coffee"          → Espresso Machine, Coffee Beans 1kg
+$all wireless + audio   → Noise-Cancelling Headphones
+$size: 1                → Chef Knife, Desk Lamp</pre>
+<h2><code>$elemMatch</code>: one element meets every condition</h2>
+<p>Without <code>$elemMatch</code>, each condition can be satisfied by a <i>different</i> element.</p>
+<pre class="code">// ratings has an element that is >= 3 and an element that is < 4 (can be different elements)
+db.products.find({ ratings: { $gte: 3, $lt: 4 } })
+
+// a SINGLE rating that is >= 3 AND < 4  (i.e. a 3)
+db.products.find({ ratings: { $elemMatch: { $gte: 3, $lt: 4 } } })</pre>
+<h2>Arrays of embedded documents</h2>
+<pre class="code">// orders containing product 3 at all
+db.orders.find({ "items.productId": 3 })
+
+// orders where ONE line item is product 3 with qty of at least 3
+db.orders.find({ items: { $elemMatch: { productId: 3, qty: { $gte: 3 } } } })</pre>
+<div class="outlabel">Results</div>
+<pre class="out">"items.productId": 3        → orders 101, 104
+$elemMatch productId 3, qty≥3 → order 104</pre>
+<h2>Projecting array elements</h2>
+<pre class="code">db.products.find({}, { name: 1, ratings: { $slice: 2 } })     // first 2 ratings
+db.products.find({}, { name: 1, ratings: { $slice: -1 } })    // last rating
+db.products.find({}, { name: 1, ratings: { $slice: [1, 2] } })// skip 1, take 2
+
+// return only the matching line item
+db.orders.find(
+  { _id: 104 },
+  { items: { $elemMatch: { productId: 3 } } }
+)
+
+// positional $ projection: first element that matched the filter
+db.orders.find({ "items.productId": 1 }, { "items.$": 1 })</pre>
+<div class="outlabel">Result of $elemMatch projection</div>
+<pre class="out">{ _id: 104, items: [ { productId: 3, qty: 3, price: 18 } ] }</pre>
+</template>
+
+<template id="update" data-group="CRUD operations" data-title="Update: field operators">
+<p class="lead">Update methods take a filter and an update document made of operators. Without an operator you replace the whole document, which is rarely what you want.</p>
+<h2>The update methods</h2>
+<div class="tbl"><table>
+<tr><th>Method</th><th>What it does</th></tr>
+<tr><td><code>updateOne(filter, update, options)</code></td><td>Updates the first matching document.</td></tr>
+<tr><td><code>updateMany(filter, update, options)</code></td><td>Updates every matching document.</td></tr>
+<tr><td><code>replaceOne(filter, doc, options)</code></td><td>Replaces the whole document (keeps <code>_id</code>).</td></tr>
+<tr><td><code>findOneAndUpdate(...)</code></td><td>Updates and returns the document. See Find-and-modify page.</td></tr>
+</table></div>
+<pre class="code">db.products.updateOne({ _id: 4 }, { $set: { stock: 25 } })</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ acknowledged: true, insertedId: null, matchedCount: 1, modifiedCount: 1, upsertedCount: 0 }</pre>
+<h2>Field update operators</h2>
+<h3><code>$set</code> and <code>$unset</code></h3>
+<pre class="code">db.products.updateOne({ _id: 2 }, { $set: { price: 95, "specs.steel": "VG-10" } })  // set / add fields
+db.products.updateMany({}, { $set: { onSale: false } })                             // add to all
+db.products.updateMany({}, { $unset: { onSale: "" } })                              // remove a field</pre>
+<h3><code>$inc</code> and <code>$mul</code></h3>
+<pre class="code">db.products.updateOne({ _id: 1 }, { $inc: { stock: -1 } })          // decrease by 1
+db.products.updateMany({ category: "electronics" }, { $mul: { price: 0.9 } })  // 10% off</pre>
+<h3><code>$min</code> and <code>$max</code></h3>
+<p>Only change the value if the new one is lower (<code>$min</code>) or higher (<code>$max</code>) than the current value.</p>
+<pre class="code">db.products.updateOne({ _id: 3 }, { $min: { price: 15 } })   // 18 becomes 15
+db.products.updateOne({ _id: 3 }, { $min: { price: 20 } })   // no change, 20 is not lower
+db.products.updateOne({ _id: 3 }, { $max: { stock: 250 } })  // 200 becomes 250</pre>
+<h3><code>$rename</code> and <code>$currentDate</code></h3>
+<pre class="code">db.customers.updateMany({}, { $rename: { "tier": "level" } })
+db.orders.updateOne({ _id: 104 }, {
+  $set: { status: "shipped" },
+  $currentDate: { updatedAt: true, shippedTs: { $type: "timestamp" } }
+})</pre>
+<h2>Upsert: update or insert</h2>
+<p>With <code>upsert: true</code>, if nothing matches a new document is created from the filter plus the update. <code>$setOnInsert</code> fields are written only on that insert.</p>
+<pre class="code">db.products.updateOne(
+  { name: "Pour-over Kettle" },
+  { $set: { price: 59 }, $setOnInsert: { stock: 0, createdAt: new Date() } },
+  { upsert: true }
+)</pre>
+<div class="outlabel">Result (first run)</div>
+<pre class="out">{ acknowledged: true, insertedId: ObjectId("..."), matchedCount: 0, modifiedCount: 0, upsertedCount: 1 }</pre>
+<h2>Replacing a document</h2>
+<pre class="code">db.customers.replaceOne(
+  { _id: "c4" },
+  { name: "Omar Haddad", email: "omar.h@example.com", city: "Abu Dhabi", tier: "silver" }
+)</pre>
+<div class="note warn"><p><code>replaceOne</code> drops every field you don't include. To change a few fields, use <code>updateOne</code> with <code>$set</code>.</p></div>
+<h2>Updates with an aggregation pipeline</h2>
+<p>Pass an <b>array</b> as the update to compute new values from existing fields.</p>
+<pre class="code">// store each product's average rating, rounded to 2 decimals
+db.products.updateMany({}, [
+  { $set: { avgRating: { $round: [ { $avg: "$ratings" }, 2 ] } } }
+])
+
+// copy one field into another
+db.orders.updateMany({}, [ { $set: { originalTotal: "$total" } } ])</pre>
+<div class="outlabel">Result for product 1</div>
+<pre class="out">{ _id: 1, name: 'Espresso Machine', ..., avgRating: 4.67 }</pre>
+</template>
+
+<template id="array-updates" data-group="CRUD operations" data-title="Update: array operators">
+<p class="lead">Array update operators add, remove and change elements in place, without rewriting the whole array.</p>
+<h2>Adding elements</h2>
+<pre class="code">db.products.updateOne({ _id: 4 }, { $push: { tags: "desk" } })            // append (duplicates allowed)
+db.products.updateOne({ _id: 4 }, { $addToSet: { tags: "desk" } })        // append only if missing
+
+// several values at once with $each
+db.products.updateOne({ _id: 4 }, { $push: { tags: { $each: ["led", "dimmable"] } } })
+db.products.updateOne({ _id: 4 }, { $addToSet: { tags: { $each: ["led", "warm"] } } })</pre>
+<h3>Modifiers for <code>$push</code>: <code>$position</code>, <code>$sort</code>, <code>$slice</code></h3>
+<pre class="code">// insert at the front
+db.products.updateOne({ _id: 5 }, { $push: { tags: { $each: ["bestseller"], $position: 0 } } })
+
+// keep only the 3 most recent ratings: append, then keep last 3
+db.products.updateOne({ _id: 2 }, { $push: { ratings: { $each: [3], $slice: -3 } } })
+
+// append a line item and keep items sorted by price, highest first
+db.orders.updateOne({ _id: 102 }, {
+  $push: { items: { $each: [ { productId: 3, qty: 1, price: 18 } ], $sort: { price: -1 } } }
+})</pre>
+<h2>Removing elements</h2>
+<pre class="code">db.products.updateOne({ _id: 4 }, { $pull: { tags: "desk" } })                 // remove all "desk"
+db.products.updateOne({ _id: 2 }, { $pull: { ratings: { $lt: 4 } } })          // remove by condition
+db.products.updateOne({ _id: 4 }, { $pullAll: { tags: ["led", "warm"] } })     // remove listed values
+db.products.updateOne({ _id: 5 }, { $pop: { tags: 1 } })                       // remove last
+db.products.updateOne({ _id: 5 }, { $pop: { tags: -1 } })                      // remove first
+
+// remove a line item from an embedded array
+db.orders.updateOne({ _id: 101 }, { $pull: { items: { productId: 3 } } })</pre>
+<h2>Updating specific elements</h2>
+<h3><code>$</code>: the first element that matched the filter</h3>
+<pre class="code">// change qty of product 3 inside order 104
+db.orders.updateOne(
+  { _id: 104, "items.productId": 3 },
+  { $set: { "items.$.qty": 4 } }
+)</pre>
+<h3><code>$[]</code>: every element</h3>
+<pre class="code">// add 1 to every rating of product 4
+db.products.updateOne({ _id: 4 }, { $inc: { "ratings.$[]": 1 } })
+
+// mark every line item in all orders as not refunded
+db.orders.updateMany({}, { $set: { "items.$[].refunded": false } })</pre>
+<h3><code>$[name]</code> with <code>arrayFilters</code>: elements that meet a condition</h3>
+<pre class="code">// raise every line-item price below 30 by 10%
+db.orders.updateMany(
+  {},
+  { $mul: { "items.$[cheap].price": 1.1 } },
+  { arrayFilters: [ { "cheap.price": { $lt: 30 } } ] }
+)
+
+// set ratings below 4 to 4 on product 5
+db.products.updateOne(
+  { _id: 5 },
+  { $set: { "ratings.$[r]": 4 } },
+  { arrayFilters: [ { r: { $lt: 4 } } ] }
+)</pre>
+<h3>By index</h3>
+<pre class="code">db.products.updateOne({ _id: 1 }, { $set: { "ratings.0": 3 } })   // first element</pre>
+<div class="tbl"><table>
+<tr><th>Operator</th><th>Purpose</th></tr>
+<tr><td><code>$push</code></td><td>Append value(s)</td></tr>
+<tr><td><code>$addToSet</code></td><td>Append if not already present</td></tr>
+<tr><td><code>$pop</code></td><td>Remove first (-1) or last (1)</td></tr>
+<tr><td><code>$pull</code></td><td>Remove elements matching a value or condition</td></tr>
+<tr><td><code>$pullAll</code></td><td>Remove all listed values</td></tr>
+<tr><td><code>$each</code> · <code>$position</code> · <code>$slice</code> · <code>$sort</code></td><td>Modifiers for <code>$push</code> (and <code>$each</code> for <code>$addToSet</code>)</td></tr>
+<tr><td><code>$</code> · <code>$[]</code> · <code>$[id]</code></td><td>Positional: first match, all, filtered</td></tr>
+</table></div>
+</template>
+
+<template id="delete" data-group="CRUD operations" data-title="Delete operations">
+<p class="lead">Delete methods take the same filters as <code>find</code>. There is no undo, so run the filter with <code>find</code> first.</p>
+<h2>The delete methods</h2>
+<pre class="code">db.orders.deleteOne({ _id: 105 })                       // first match only
+db.orders.deleteMany({ status: "cancelled" })           // every match
+db.products.deleteMany({ stock: 0, category: "home" })  // several conditions
+db.logs.deleteMany({})                                  // empty the collection, keep indexes</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ acknowledged: true, deletedCount: 1 }</pre>
+<h2>Check before you delete</h2>
+<pre class="code">const filter = { date: { $lt: ISODate("2026-02-01") } }
+db.orders.countDocuments(filter)    // 2 → orders 101 and 102
+db.orders.deleteMany(filter)</pre>
+<h2>Delete and return the document</h2>
+<pre class="code">db.orders.findOneAndDelete(
+  { status: "pending" },
+  { sort: { date: 1 } }           // oldest pending order
+)</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 104, customerId: 'c3', status: 'pending', total: 143, ... }</pre>
+<h2>Automatic deletion with TTL</h2>
+<p>A TTL index removes documents a set time after a date field.</p>
+<pre class="code">db.sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600 })   // delete after 1 hour</pre>
+<h2>Drop vs deleteMany</h2>
+<div class="tbl"><table>
+<tr><th></th><th><code>deleteMany({})</code></th><th><code>drop()</code></th></tr>
+<tr><td>Removes documents</td><td>Yes, one by one</td><td>Yes, instantly</td></tr>
+<tr><td>Keeps indexes</td><td>Yes</td><td>No</td></tr>
+<tr><td>Keeps validation rules</td><td>Yes</td><td>No</td></tr>
+<tr><td>Speed on large data</td><td>Slow</td><td>Fast</td></tr>
+</table></div>
+</template>
+
+<template id="modify-bulk" data-group="CRUD operations" data-title="Find-and-modify & bulk writes">
+<p class="lead">These methods combine a read and a write in one atomic step, or send many writes in a single round trip.</p>
+<h2><code>findOneAndUpdate()</code></h2>
+<p>Returns the document <b>before</b> the change by default. Use <code>returnDocument: "after"</code> for the new version.</p>
+<pre class="code">// reserve one unit of stock and get the new count back
+db.products.findOneAndUpdate(
+  { _id: 6, stock: { $gt: 0 } },
+  { $inc: { stock: -1 } },
+  { returnDocument: "after", projection: { name: 1, stock: 1 } }
+)</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 6, name: 'Noise-Cancelling Headphones', stock: 7 }</pre>
+<h3>Counter pattern (auto-increment IDs)</h3>
+<pre class="code">db.counters.findOneAndUpdate(
+  { _id: "orderId" },
+  { $inc: { seq: 1 } },
+  { upsert: true, returnDocument: "after" }
+).seq</pre>
+<h2><code>findOneAndReplace()</code></h2>
+<pre class="code">db.customers.findOneAndReplace(
+  { _id: "c2" },
+  { name: "Marco Rossi", email: "m.rossi@example.com", city: "Rome", tier: "gold" },
+  { returnDocument: "after" }
+)</pre>
+<h2><code>bulkWrite()</code></h2>
+<p>Mix inserts, updates, replaces and deletes in one call.</p>
+<pre class="code">db.products.bulkWrite([
+  { insertOne:  { document: { _id: 7, name: "Tea Sampler", category: "grocery", price: 24, stock: 60 } } },
+  { updateOne:  { filter: { _id: 4 }, update: { $set: { stock: 30 } } } },
+  { updateMany: { filter: { category: "kitchen" }, update: { $inc: { stock: 5 } } } },
+  { replaceOne: { filter: { _id: 3 }, replacement: { name: "Coffee Beans 1kg", category: "grocery", price: 19, stock: 180 } } },
+  { deleteOne:  { filter: { _id: 7 } } }
+], { ordered: true })</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ acknowledged: true, insertedCount: 1, matchedCount: 4, modifiedCount: 4, deletedCount: 1, upsertedCount: 0, ... }</pre>
+<div class="note"><p>All single-document writes are atomic. For changes across several documents that must succeed or fail together, use a transaction (see the Transactions page).</p></div>
+</template>
+
+<!-- INDEXES -->
+<template id="indexes" data-group="Performance" data-title="Indexes & explain">
+<p class="lead">Without an index MongoDB scans every document (COLLSCAN). An index lets it jump straight to matches (IXSCAN).</p>
+<h2>Creating indexes</h2>
+<pre class="code">db.products.createIndex({ category: 1 })                         // single field, ascending
+db.products.createIndex({ category: 1, price: -1 })              // compound
+db.customers.createIndex({ email: 1 }, { unique: true })         // unique
+db.products.createIndex({ tags: 1 })                             // multikey (on an array)
+db.orders.createIndex({ "items.productId": 1 })                  // field inside array of docs
+db.products.createIndex({ name: "text", tags: "text" })          // text search
+db.products.createIndex({ "specs.$**": 1 })                      // wildcard for dynamic fields
+db.orders.createIndex({ customerId: 1 }, { partialFilterExpression: { status: "pending" } })
+db.customers.createIndex({ phone: 1 }, { sparse: true })         // skip docs without the field
+db.sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 })  // TTL
+db.places.createIndex({ location: "2dsphere" })                  // geospatial
+db.orders.createIndex({ date: 1 }, { name: "by_date" })          // custom name</pre>
+<h2>Managing indexes</h2>
+<pre class="code">db.products.getIndexes()
+db.products.dropIndex("category_1")
+db.products.dropIndex({ category: 1, price: -1 })
+db.products.dropIndexes()                  // all except _id
+db.products.hideIndex("tags_1")            // test the impact of removing it
+db.products.unhideIndex("tags_1")</pre>
+<h2>Reading <code>explain()</code></h2>
+<pre class="code">db.products.find({ category: "kitchen" }).sort({ price: -1 }).explain("executionStats")</pre>
+<div class="outlabel">Key fields to check</div>
+<pre class="out">winningPlan.stage          IXSCAN is good, COLLSCAN means no index was used
+executionStats.nReturned   documents returned
+totalKeysExamined          index entries read
+totalDocsExamined          documents read (ideally close to nReturned)
+executionTimeMillis        time taken</pre>
+<pre class="code">db.products.find({ category: "kitchen" }).hint({ category: 1 })   // force an index
+db.orders.aggregate([ { $match: { status: "shipped" } } ]).explain()</pre>
+<h2>The ESR rule for compound indexes</h2>
+<p>Order fields as <b>E</b>quality, then <b>S</b>ort, then <b>R</b>ange.</p>
+<pre class="code">// query: status equals, sorted by date, total in a range
+db.orders.find({ status: "shipped", total: { $gt: 100 } }).sort({ date: -1 })
+
+// best index:            Equality   Sort      Range
+db.orders.createIndex({ status: 1, date: -1, total: 1 })</pre>
+<h2>Text search</h2>
+<pre class="code">db.products.createIndex({ name: "text", tags: "text" }, { weights: { name: 3, tags: 1 } })
+
+db.products.find({ $text: { $search: "coffee" } })
+db.products.find({ $text: { $search: "\"coffee beans\"" } })       // exact phrase
+db.products.find({ $text: { $search: "coffee -machine" } })        // exclude a word
+db.products.find(
+  { $text: { $search: "coffee wireless" } },
+  { name: 1, score: { $meta: "textScore" } }
+).sort({ score: { $meta: "textScore" } })</pre>
+</template>
+
+<!-- AGGREGATION -->
+<template id="agg-intro" data-group="Aggregation framework" data-title="How pipelines work">
+<p class="lead">An aggregation pipeline is an array of stages. Documents flow through each stage in order, and each stage reshapes, filters or summarises them before passing them on.</p>
+<pre class="code">db.collection.aggregate([
+  { $stage1: { ... } },
+  { $stage2: { ... } },
+  ...
+], { options })</pre>
+<h2>A first pipeline</h2>
+<p>Revenue per customer, ignoring cancelled orders, highest first:</p>
+<pre class="code">db.orders.aggregate([
+  { $match: { status: { $ne: "cancelled" } } },         // 1. filter
+  { $group: {                                           // 2. summarise
+      _id: "$customerId",
+      orders:  { $sum: 1 },
+      revenue: { $sum: "$total" }
+  } },
+  { $sort: { revenue: -1 } }                            // 3. order
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 'c1', orders: 2, revenue: 484 }
+{ _id: 'c3', orders: 2, revenue: 421 }
+{ _id: 'c2', orders: 1, revenue: 58 }</pre>
+<h2>Field paths, operators and variables</h2>
+<div class="tbl"><table>
+<tr><th>Syntax</th><th>Meaning</th><th>Example</th></tr>
+<tr><td><code>"$field"</code></td><td>Value of a field in the current document</td><td><code>"$price"</code>, <code>"$specs.brand"</code></td></tr>
+<tr><td><code>{ $op: [...] }</code></td><td>Expression operator</td><td><code>{ $multiply: ["$qty", "$price"] }</code></td></tr>
+<tr><td><code>"$$ROOT"</code></td><td>The whole current document</td><td><code>{ $push: "$$ROOT" }</code></td></tr>
+<tr><td><code>"$$CURRENT"</code></td><td>Current document (same as $$ROOT unless changed)</td><td></td></tr>
+<tr><td><code>"$$NOW"</code></td><td>Current date-time</td><td><code>{ $dateDiff: { startDate: "$date", endDate: "$$NOW", unit: "day" } }</code></td></tr>
+<tr><td><code>"$$REMOVE"</code></td><td>Omit the field</td><td><code>{ $cond: [cond, "$x", "$$REMOVE"] }</code></td></tr>
+<tr><td><code>"$$var"</code></td><td>User variable from <code>$let</code>, <code>$map</code>, <code>$filter</code>, <code>$lookup</code></td><td><code>"$$item.qty"</code></td></tr>
+<tr><td><code>{ $literal: "$x" }</code></td><td>The text "$x", not a field path</td><td></td></tr>
+</table></div>
+<h2>Aggregate options</h2>
+<pre class="code">db.orders.aggregate(pipeline, {
+  allowDiskUse: true,                 // let large sorts/groups spill to disk
+  maxTimeMS: 10000,                   // abort after 10 s
+  collation: { locale: "en", strength: 2 },
+  hint: { status: 1 },
+  comment: "monthly revenue report",
+  let: { minTotal: 100 }              // variables available as $$minTotal
+})</pre>
+<h2>Performance tips</h2>
+<ul>
+<li>Put <code>$match</code> and <code>$limit</code> as early as possible so later stages see fewer documents.</li>
+<li>A <code>$match</code> or <code>$sort</code> at the start of the pipeline can use indexes.</li>
+<li>Each stage has a 100 MB memory limit; <code>allowDiskUse</code> lifts it for <code>$group</code> and <code>$sort</code>.</li>
+<li>Build pipelines one stage at a time and run them to check the intermediate output.</li>
+</ul>
+<h2>Stage index</h2>
+<div class="tbl"><table>
+<tr><th>Stage</th><th>Purpose</th><th>Page</th></tr>
+<tr><td><code>$match</code></td><td>Filter documents</td><td>Filter & shape</td></tr>
+<tr><td><code>$project</code> · <code>$addFields</code> · <code>$set</code> · <code>$unset</code></td><td>Choose, add, remove fields</td><td>Filter & shape</td></tr>
+<tr><td><code>$sort</code> · <code>$limit</code> · <code>$skip</code> · <code>$sample</code> · <code>$count</code></td><td>Order and slice</td><td>Filter & shape</td></tr>
+<tr><td><code>$group</code> · <code>$bucket</code> · <code>$bucketAuto</code> · <code>$sortByCount</code></td><td>Summarise</td><td>Grouping</td></tr>
+<tr><td><code>$unwind</code> · <code>$lookup</code> · <code>$graphLookup</code> · <code>$unionWith</code></td><td>Arrays and joins</td><td>Unwind & join</td></tr>
+<tr><td><code>$facet</code> · <code>$replaceRoot</code> · <code>$replaceWith</code> · <code>$redact</code></td><td>Restructure</td><td>Reshape & output</td></tr>
+<tr><td><code>$out</code> · <code>$merge</code></td><td>Write results to a collection</td><td>Reshape & output</td></tr>
+<tr><td><code>$setWindowFields</code> · <code>$densify</code> · <code>$fill</code></td><td>Running totals, ranks, gap filling</td><td>Window functions</td></tr>
+</table></div>
+</template>
+
+<template id="stages-core" data-group="Aggregation framework" data-title="Stages: filter & shape">
+<p class="lead">The stages you will use in almost every pipeline.</p>
+<h2><code>$match</code></h2>
+<p>Filters documents using the same syntax as <code>find</code>. Use <code>$expr</code> for aggregation expressions.</p>
+<pre class="code">db.orders.aggregate([
+  { $match: { status: { $in: ["shipped", "delivered"] }, total: { $gte: 100 } } }
+])
+
+db.orders.aggregate([
+  { $match: { $expr: { $gt: [ { $size: "$items" }, 1 ] } } }   // orders with more than one item
+])</pre>
+<div class="outlabel">Result (order _id values)</div>
+<pre class="out">first:  101, 103, 106
+second: 101, 104, 106</pre>
+<h2><code>$project</code></h2>
+<p>Include, exclude, rename or compute fields.</p>
+<pre class="code">db.products.aggregate([
+  { $project: {
+      _id: 0,
+      product: "$name",                                    // rename
+      price: 1,                                            // keep
+      brand: "$specs.brand",                               // pull up a nested field
+      stockValue: { $multiply: ["$price", "$stock"] },     // computed
+      avgRating: { $round: [ { $avg: "$ratings" }, 1 ] },
+      inStock: { $gt: ["$stock", 0] }
+  } }
+])</pre>
+<div class="outlabel">Result (first two)</div>
+<pre class="out">{ product: 'Espresso Machine', price: 249, brand: 'Brava', stockValue: 2988, avgRating: 4.7, inStock: true }
+{ product: 'Chef Knife', price: 89, brand: 'Kato', stockValue: 3560, avgRating: 4.8, inStock: true }</pre>
+<h2><code>$addFields</code> / <code>$set</code></h2>
+<p>Add fields while keeping everything else. <code>$set</code> is an alias.</p>
+<pre class="code">db.orders.aggregate([
+  { $set: {
+      itemCount: { $sum: "$items.qty" },
+      month: { $month: "$date" }
+  } }
+])</pre>
+<h2><code>$unset</code></h2>
+<pre class="code">db.customers.aggregate([ { $unset: ["email", "joined"] } ])</pre>
+<h2><code>$sort</code>, <code>$skip</code>, <code>$limit</code></h2>
+<pre class="code">db.products.aggregate([
+  { $sort: { price: -1 } },
+  { $skip: 1 },
+  { $limit: 2 },
+  { $project: { _id: 0, name: 1, price: 1 } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ name: 'Noise-Cancelling Headphones', price: 199 }
+{ name: 'Chef Knife', price: 89 }</pre>
+<h2><code>$count</code></h2>
+<pre class="code">db.orders.aggregate([
+  { $match: { status: "shipped" } },
+  { $count: "shippedOrders" }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ shippedOrders: 2 }</pre>
+<h2><code>$sample</code></h2>
+<pre class="code">db.products.aggregate([ { $sample: { size: 2 } } ])   // 2 random products</pre>
+<h2><code>$redact</code></h2>
+<p>Keeps or prunes documents (and nested levels) based on a condition. Uses <code>$$KEEP</code>, <code>$$PRUNE</code>, <code>$$DESCEND</code>.</p>
+<pre class="code">db.products.aggregate([
+  { $redact: { $cond: [ { $gt: ["$stock", 0] }, "$$KEEP", "$$PRUNE" ] } }
+])</pre>
+</template>
+
+<template id="group" data-group="Aggregation framework" data-title="Stages: grouping & accumulators">
+<p class="lead"><code>$group</code> collects documents that share a key and runs accumulators over each group.</p>
+<h2><code>$group</code> basics</h2>
+<pre class="code">db.orders.aggregate([
+  { $group: { _id: "$status", count: { $sum: 1 } } },
+  { $sort: { count: -1 } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 'shipped', count: 2 }
+{ _id: 'delivered', count: 2 }
+{ _id: 'pending', count: 1 }
+{ _id: 'cancelled', count: 1 }</pre>
+<h3>Group by several fields</h3>
+<pre class="code">db.orders.aggregate([
+  { $group: {
+      _id: { customer: "$customerId", status: "$status" },
+      total: { $sum: "$total" }
+  } }
+])</pre>
+<h3>Group everything into one result</h3>
+<pre class="code">db.products.aggregate([
+  { $group: {
+      _id: null,
+      products: { $sum: 1 },
+      avgPrice: { $avg: "$price" },
+      minPrice: { $min: "$price" },
+      maxPrice: { $max: "$price" },
+      units:    { $sum: "$stock" }
+  } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: null, products: 6, avgPrice: 104.83333333333333, minPrice: 18, maxPrice: 249, units: 335 }</pre>
+<h2>Accumulator reference</h2>
+<div class="tbl"><table>
+<tr><th>Accumulator</th><th>Returns</th><th>Example inside $group</th></tr>
+<tr><td><code>$sum</code></td><td>Total (use <code>1</code> to count)</td><td><code>revenue: { $sum: "$total" }</code></td></tr>
+<tr><td><code>$count</code></td><td>Number of documents</td><td><code>n: { $count: {} }</code></td></tr>
+<tr><td><code>$avg</code></td><td>Average</td><td><code>avg: { $avg: "$price" }</code></td></tr>
+<tr><td><code>$min</code> / <code>$max</code></td><td>Smallest / largest</td><td><code>cheapest: { $min: "$price" }</code></td></tr>
+<tr><td><code>$first</code> / <code>$last</code></td><td>Value from first / last doc (sort first)</td><td><code>firstOrder: { $first: "$date" }</code></td></tr>
+<tr><td><code>$push</code></td><td>Array of all values</td><td><code>names: { $push: "$name" }</code></td></tr>
+<tr><td><code>$addToSet</code></td><td>Array of unique values</td><td><code>cities: { $addToSet: "$city" }</code></td></tr>
+<tr><td><code>$top</code> / <code>$bottom</code></td><td>Top / bottom element by a sort</td><td><code>{ $top: { sortBy: { price: -1 }, output: "$name" } }</code></td></tr>
+<tr><td><code>$topN</code> / <code>$bottomN</code></td><td>Top / bottom N elements</td><td><code>{ $topN: { n: 2, sortBy: { price: -1 }, output: "$name" } }</code></td></tr>
+<tr><td><code>$firstN</code> / <code>$lastN</code></td><td>First / last N values</td><td><code>{ $firstN: { n: 3, input: "$name" } }</code></td></tr>
+<tr><td><code>$maxN</code> / <code>$minN</code></td><td>N largest / smallest values</td><td><code>{ $maxN: { n: 2, input: "$price" } }</code></td></tr>
+<tr><td><code>$stdDevPop</code> / <code>$stdDevSamp</code></td><td>Standard deviation</td><td><code>sd: { $stdDevPop: "$total" }</code></td></tr>
+<tr><td><code>$mergeObjects</code></td><td>One merged document</td><td><code>{ $mergeObjects: "$specs" }</code></td></tr>
+<tr><td><code>$median</code> / <code>$percentile</code></td><td>Median / percentiles</td><td><code>{ $median: { input: "$total", method: "approximate" } }</code></td></tr>
+</table></div>
+<h3>Accumulators in action</h3>
+<pre class="code">db.products.aggregate([
+  { $group: {
+      _id: "$category",
+      count:     { $sum: 1 },
+      avgPrice:  { $avg: "$price" },
+      names:     { $push: "$name" },
+      priciest:  { $top: { sortBy: { price: -1 }, output: ["$name", "$price"] } }
+  } },
+  { $sort: { avgPrice: -1 } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 'kitchen', count: 2, avgPrice: 169, names: ['Espresso Machine','Chef Knife'], priciest: ['Espresso Machine', 249] }
+{ _id: 'electronics', count: 2, avgPrice: 114, names: ['Wireless Mouse','Noise-Cancelling Headphones'], priciest: ['Noise-Cancelling Headphones', 199] }
+{ _id: 'home', count: 1, avgPrice: 45, names: ['Desk Lamp'], priciest: ['Desk Lamp', 45] }
+{ _id: 'grocery', count: 1, avgPrice: 18, names: ['Coffee Beans 1kg'], priciest: ['Coffee Beans 1kg', 18] }</pre>
+<h3>Monthly revenue</h3>
+<pre class="code">db.orders.aggregate([
+  { $match: { status: { $ne: "cancelled" } } },
+  { $group: {
+      _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
+      revenue: { $sum: "$total" },
+      orders:  { $sum: 1 }
+  } },
+  { $sort: { _id: 1 } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: '2026-01', revenue: 343, orders: 2 }
+{ _id: '2026-02', revenue: 342, orders: 2 }
+{ _id: '2026-03', revenue: 278, orders: 1 }</pre>
+<h2><code>$sortByCount</code></h2>
+<p>Shorthand for group-by-value, count, then sort descending.</p>
+<pre class="code">db.customers.aggregate([ { $sortByCount: "$city" } ])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 'Dubai', count: 2 }
+{ _id: 'Milan', count: 1 }
+{ _id: 'Seoul', count: 1 }</pre>
+<h2><code>$bucket</code></h2>
+<p>Groups values into ranges you define. Each boundary is inclusive below, exclusive above.</p>
+<pre class="code">db.products.aggregate([
+  { $bucket: {
+      groupBy: "$price",
+      boundaries: [0, 50, 100, 500],
+      default: "other",
+      output: { count: { $sum: 1 }, items: { $push: "$name" } }
+  } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 0,   count: 3, items: ['Coffee Beans 1kg', 'Desk Lamp', 'Wireless Mouse'] }
+{ _id: 50,  count: 1, items: ['Chef Knife'] }
+{ _id: 100, count: 2, items: ['Espresso Machine', 'Noise-Cancelling Headphones'] }</pre>
+<h2><code>$bucketAuto</code></h2>
+<p>MongoDB picks the boundaries to spread documents evenly across N buckets.</p>
+<pre class="code">db.products.aggregate([
+  { $bucketAuto: { groupBy: "$price", buckets: 3 } }
+])</pre>
+</template>
+
+<template id="unwind-lookup" data-group="Aggregation framework" data-title="Stages: unwind & join">
+<p class="lead"><code>$unwind</code> turns array elements into separate documents. <code>$lookup</code> joins documents from another collection.</p>
+<h2><code>$unwind</code></h2>
+<pre class="code">db.orders.aggregate([
+  { $match: { _id: 101 } },
+  { $unwind: "$items" }
+])</pre>
+<div class="outlabel">Result: one document per line item</div>
+<pre class="out">{ _id: 101, customerId: 'c1', items: { productId: 1, qty: 1, price: 249 }, ... }
+{ _id: 101, customerId: 'c1', items: { productId: 3, qty: 2, price: 18 }, ... }</pre>
+<h3>Options</h3>
+<pre class="code">{ $unwind: {
+    path: "$items",
+    includeArrayIndex: "line",            // store element position
+    preserveNullAndEmptyArrays: true      // keep docs with missing or empty arrays
+} }</pre>
+<h3>Best-selling products</h3>
+<pre class="code">db.orders.aggregate([
+  { $match: { status: { $ne: "cancelled" } } },
+  { $unwind: "$items" },
+  { $group: { _id: "$items.productId", unitsSold: { $sum: "$items.qty" },
+              sales: { $sum: { $multiply: ["$items.qty", "$items.price"] } } } },
+  { $sort: { unitsSold: -1, _id: 1 } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 3, unitsSold: 5, sales: 90 }
+{ _id: 5, unitsSold: 3, sales: 87 }
+{ _id: 1, unitsSold: 2, sales: 498 }
+{ _id: 2, unitsSold: 1, sales: 89 }
+{ _id: 6, unitsSold: 1, sales: 199 }</pre>
+<h2><code>$lookup</code>: equality join</h2>
+<pre class="code">db.orders.aggregate([
+  { $match: { _id: 102 } },
+  { $lookup: {
+      from: "customers",          // collection to join
+      localField: "customerId",   // field in orders
+      foreignField: "_id",        // field in customers
+      as: "customer"              // output array
+  } },
+  { $unwind: "$customer" },       // array of one → plain object
+  { $project: { total: 1, "customer.name": 1, "customer.city": 1 } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 102, total: 58, customer: { name: 'Marco Rossi', city: 'Milan' } }</pre>
+<h3>Join line items to product names</h3>
+<pre class="code">db.orders.aggregate([
+  { $match: { _id: 104 } },
+  { $unwind: "$items" },
+  { $lookup: { from: "products", localField: "items.productId", foreignField: "_id", as: "p" } },
+  { $project: { _id: 0, product: { $first: "$p.name" }, qty: "$items.qty" } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ product: 'Chef Knife', qty: 1 }
+{ product: 'Coffee Beans 1kg', qty: 3 }</pre>
+<h2><code>$lookup</code> with a pipeline</h2>
+<p>Use <code>let</code> and <code>pipeline</code> for conditions beyond simple equality, or to filter and shape the joined documents.</p>
+<pre class="code">// each customer with only their non-cancelled orders over 100
+db.customers.aggregate([
+  { $lookup: {
+      from: "orders",
+      let: { cid: "$_id" },
+      pipeline: [
+        { $match: { $expr: { $and: [
+            { $eq: ["$customerId", "$$cid"] },
+            { $ne: ["$status", "cancelled"] },
+            { $gt: ["$total", 100] }
+        ] } } },
+        { $project: { _id: 1, total: 1 } }
+      ],
+      as: "bigOrders"
+  } },
+  { $project: { name: 1, bigOrders: 1 } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 'c1', name: 'Aisha Khan',  bigOrders: [ { _id: 101, total: 285 }, { _id: 103, total: 199 } ] }
+{ _id: 'c2', name: 'Marco Rossi', bigOrders: [] }
+{ _id: 'c3', name: 'Lena Park',   bigOrders: [ { _id: 104, total: 143 }, { _id: 106, total: 278 } ] }
+{ _id: 'c4', name: 'Omar Haddad', bigOrders: [] }</pre>
+<h2><code>$graphLookup</code>: recursive lookup</h2>
+<p>Follows references through a hierarchy, such as an org chart or category tree.</p>
+<pre class="code">db.staff.insertMany([
+  { _id: 1, name: "Sara",  managerId: null },
+  { _id: 2, name: "Yusuf", managerId: 1 },
+  { _id: 3, name: "Nina",  managerId: 2 },
+  { _id: 4, name: "Tom",   managerId: 2 }
+])
+
+db.staff.aggregate([
+  { $match: { name: "Nina" } },
+  { $graphLookup: {
+      from: "staff",
+      startWith: "$managerId",
+      connectFromField: "managerId",
+      connectToField: "_id",
+      as: "chain",
+      depthField: "level"
+  } },
+  { $project: { name: 1, "chain.name": 1, "chain.level": 1 } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 3, name: 'Nina', chain: [ { name: 'Yusuf', level: 0 }, { name: 'Sara', level: 1 } ] }</pre>
+<h2><code>$unionWith</code></h2>
+<p>Appends documents from another collection, like SQL <code>UNION ALL</code>.</p>
+<pre class="code">db.customers.aggregate([
+  { $project: { _id: 0, name: 1, type: { $literal: "customer" } } },
+  { $unionWith: { coll: "staff", pipeline: [ { $project: { _id: 0, name: 1, type: { $literal: "staff" } } } ] } }
+])</pre>
+</template>
+
+<template id="reshape" data-group="Aggregation framework" data-title="Stages: reshape & output">
+<p class="lead">Stages that restructure whole documents, run several pipelines in parallel, or save results.</p>
+<h2><code>$replaceRoot</code> / <code>$replaceWith</code></h2>
+<p>Promote a nested document to be the top-level document.</p>
+<pre class="code">db.products.aggregate([
+  { $match: { specs: { $exists: true } } },
+  { $replaceWith: { $mergeObjects: [ { name: "$name" }, "$specs" ] } }
+])
+// same thing: { $replaceRoot: { newRoot: { $mergeObjects: [...] } } }</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ name: 'Espresso Machine', brand: 'Brava', watts: 1350 }
+{ name: 'Chef Knife', brand: 'Kato' }</pre>
+<h2><code>$facet</code>: several pipelines in one pass</h2>
+<p>Great for search pages that need results plus counts and filters at once.</p>
+<pre class="code">db.products.aggregate([
+  { $facet: {
+      byCategory: [ { $sortByCount: "$category" } ],
+      priceStats: [ { $group: { _id: null, min: { $min: "$price" }, max: { $max: "$price" } } } ],
+      page1:      [ { $sort: { price: 1 } }, { $limit: 2 }, { $project: { name: 1, price: 1 } } ],
+      total:      [ { $count: "n" } ]
+  } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{
+  byCategory: [ { _id: 'kitchen', count: 2 }, { _id: 'electronics', count: 2 }, { _id: 'home', count: 1 }, { _id: 'grocery', count: 1 } ],
+  priceStats: [ { _id: null, min: 18, max: 249 } ],
+  page1: [ { _id: 3, name: 'Coffee Beans 1kg', price: 18 }, { _id: 5, name: 'Wireless Mouse', price: 29 } ],
+  total: [ { n: 6 } ]
+}</pre>
+<h2><code>$out</code>: write results to a collection</h2>
+<p>Replaces the target collection entirely. Must be the last stage.</p>
+<pre class="code">db.orders.aggregate([
+  { $group: { _id: "$customerId", lifetime: { $sum: "$total" } } },
+  { $out: "customer_totals" }
+])</pre>
+<h2><code>$merge</code>: upsert results into a collection</h2>
+<p>More flexible than <code>$out</code>: it can insert, replace, merge or keep existing documents. Must be the last stage.</p>
+<pre class="code">db.orders.aggregate([
+  { $match: { status: { $ne: "cancelled" } } },
+  { $group: { _id: "$customerId", lifetime: { $sum: "$total" } } },
+  { $merge: {
+      into: "customer_totals",
+      on: "_id",
+      whenMatched: "merge",       // replace | keepExisting | fail | pipeline
+      whenNotMatched: "insert"    // discard | fail
+  } }
+])</pre>
+<h2><code>$densify</code> and <code>$fill</code></h2>
+<p>Fill gaps in time series or sequences.</p>
+<pre class="code">db.readings.insertMany([
+  { day: ISODate("2026-05-01"), temp: 31 },
+  { day: ISODate("2026-05-03"), temp: 35 }
+])
+
+db.readings.aggregate([
+  { $densify: { field: "day", range: { step: 1, unit: "day", bounds: "full" } } },  // adds May 2
+  { $fill: { sortBy: { day: 1 }, output: { temp: { method: "linear" } } } }           // temp 33 on May 2
+])</pre>
+<h2>Other stages worth knowing</h2>
+<div class="tbl"><table>
+<tr><th>Stage</th><th>Use</th></tr>
+<tr><td><code>$geoNear</code></td><td>Sort by distance from a point (needs a 2dsphere index, must be first).</td></tr>
+<tr><td><code>$indexStats</code></td><td>Usage statistics for each index.</td></tr>
+<tr><td><code>$collStats</code></td><td>Collection size and latency statistics.</td></tr>
+<tr><td><code>$documents</code></td><td>Start a pipeline from literal documents: <code>db.aggregate([ { $documents: [ {x:1} ] } ])</code></td></tr>
+<tr><td><code>$changeStream</code></td><td>Used by <code>watch()</code> to stream real-time changes.</td></tr>
+<tr><td><code>$search</code> / <code>$vectorSearch</code></td><td>Atlas full-text and vector search (Atlas or MongoDB Search only).</td></tr>
+</table></div>
+</template>
+
+<template id="window" data-group="Aggregation framework" data-title="Window functions">
+<p class="lead"><code>$setWindowFields</code> computes values across a set of related documents (a window) without collapsing them like <code>$group</code> does. Use it for running totals, rankings and moving averages.</p>
+<h2>Structure</h2>
+<pre class="code">{ $setWindowFields: {
+    partitionBy: "$field",           // like GROUP BY, optional
+    sortBy: { field: 1 },            // order within each partition
+    output: {
+      newField: {
+        $operator: "$value",
+        window: { documents: ["unbounded", "current"] }   // or range: [...]
+      }
+    }
+} }</pre>
+<h2>Running total per customer</h2>
+<pre class="code">db.orders.aggregate([
+  { $match: { status: { $ne: "cancelled" } } },
+  { $setWindowFields: {
+      partitionBy: "$customerId",
+      sortBy: { date: 1 },
+      output: {
+        runningTotal: { $sum: "$total", window: { documents: ["unbounded", "current"] } },
+        orderNo:      { $documentNumber: {} }
+      }
+  } },
+  { $project: { customerId: 1, total: 1, runningTotal: 1, orderNo: 1 } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 101, customerId: 'c1', total: 285, runningTotal: 285, orderNo: 1 }
+{ _id: 103, customerId: 'c1', total: 199, runningTotal: 484, orderNo: 2 }
+{ _id: 102, customerId: 'c2', total: 58,  runningTotal: 58,  orderNo: 1 }
+{ _id: 104, customerId: 'c3', total: 143, runningTotal: 143, orderNo: 1 }
+{ _id: 106, customerId: 'c3', total: 278, runningTotal: 421, orderNo: 2 }</pre>
+<h2>Ranking</h2>
+<pre class="code">db.products.aggregate([
+  { $setWindowFields: {
+      partitionBy: "$category",
+      sortBy: { price: -1 },
+      output: {
+        rankInCategory: { $rank: {} },
+        denseRank:      { $denseRank: {} }
+      }
+  } },
+  { $project: { _id: 0, name: 1, category: 1, price: 1, rankInCategory: 1 } }
+])</pre>
+<h2>Previous and next values with <code>$shift</code></h2>
+<pre class="code">db.orders.aggregate([
+  { $setWindowFields: {
+      sortBy: { date: 1 },
+      output: {
+        prevTotal: { $shift: { output: "$total", by: -1, default: null } },
+        nextTotal: { $shift: { output: "$total", by: 1,  default: null } }
+      }
+  } }
+])</pre>
+<h2>Moving average over a time range</h2>
+<pre class="code">db.orders.aggregate([
+  { $setWindowFields: {
+      sortBy: { date: 1 },
+      output: {
+        avg30d: { $avg: "$total", window: { range: [-30, 0], unit: "day" } }
+      }
+  } }
+])</pre>
+<h2>Window operators</h2>
+<div class="tbl"><table>
+<tr><th>Operator</th><th>Purpose</th></tr>
+<tr><td><code>$sum</code> · <code>$avg</code> · <code>$min</code> · <code>$max</code> · <code>$count</code></td><td>Accumulate over the window</td></tr>
+<tr><td><code>$rank</code> · <code>$denseRank</code> · <code>$documentNumber</code></td><td>Position within the partition</td></tr>
+<tr><td><code>$shift</code></td><td>Value from a document N positions away</td></tr>
+<tr><td><code>$first</code> · <code>$last</code> · <code>$push</code> · <code>$addToSet</code></td><td>Collect values in the window</td></tr>
+<tr><td><code>$derivative</code> · <code>$integral</code></td><td>Rate of change / area under curve</td></tr>
+<tr><td><code>$expMovingAvg</code></td><td>Exponential moving average</td></tr>
+<tr><td><code>$covariancePop</code> · <code>$stdDevSamp</code></td><td>Statistics</td></tr>
+<tr><td><code>$locf</code> · <code>$linearFill</code></td><td>Fill missing values</td></tr>
+</table></div>
+</template>
+
+<!-- EXPRESSIONS -->
+<template id="expr-arith" data-group="Expression operators" data-title="Arithmetic">
+<p class="lead">Arithmetic operators work in <code>$project</code>, <code>$set</code>, <code>$group</code> accumulators, <code>$expr</code> and pipeline updates.</p>
+<pre class="code">db.orders.aggregate([
+  { $match: { _id: 101 } },
+  { $unwind: "$items" },
+  { $project: {
+      _id: 0,
+      productId: "$items.productId",
+      lineTotal: { $multiply: ["$items.qty", "$items.price"] },
+      withVat:   { $round: [ { $multiply: ["$items.qty", "$items.price", 1.05] }, 2 ] },
+      discount:  { $subtract: [ "$items.price", 5 ] },
+      perUnit:   { $divide: [ { $multiply: ["$items.qty", "$items.price"] }, "$items.qty" ] }
+  } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ productId: 1, lineTotal: 249, withVat: 261.45, discount: 244, perUnit: 249 }
+{ productId: 3, lineTotal: 36,  withVat: 37.8,   discount: 13,  perUnit: 18 }</pre>
+<div class="tbl"><table>
+<tr><th>Operator</th><th>Example</th><th>Result</th></tr>
+<tr><td><code>$add</code></td><td><code>{ $add: [5, 3, 2] }</code></td><td>10 (also adds ms to a date)</td></tr>
+<tr><td><code>$subtract</code></td><td><code>{ $subtract: [10, 4] }</code></td><td>6</td></tr>
+<tr><td><code>$multiply</code></td><td><code>{ $multiply: [2, 3, 4] }</code></td><td>24</td></tr>
+<tr><td><code>$divide</code></td><td><code>{ $divide: [9, 2] }</code></td><td>4.5</td></tr>
+<tr><td><code>$mod</code></td><td><code>{ $mod: [10, 3] }</code></td><td>1</td></tr>
+<tr><td><code>$abs</code></td><td><code>{ $abs: -7 }</code></td><td>7</td></tr>
+<tr><td><code>$ceil</code></td><td><code>{ $ceil: 4.2 }</code></td><td>5</td></tr>
+<tr><td><code>$floor</code></td><td><code>{ $floor: 4.8 }</code></td><td>4</td></tr>
+<tr><td><code>$round</code></td><td><code>{ $round: [4.567, 2] }</code></td><td>4.57</td></tr>
+<tr><td><code>$trunc</code></td><td><code>{ $trunc: [4.567, 1] }</code></td><td>4.5</td></tr>
+<tr><td><code>$pow</code></td><td><code>{ $pow: [2, 10] }</code></td><td>1024</td></tr>
+<tr><td><code>$sqrt</code></td><td><code>{ $sqrt: 81 }</code></td><td>9</td></tr>
+<tr><td><code>$exp</code></td><td><code>{ $exp: 1 }</code></td><td>2.718…</td></tr>
+<tr><td><code>$ln</code> / <code>$log10</code> / <code>$log</code></td><td><code>{ $log: [100, 10] }</code></td><td>2</td></tr>
+</table></div>
+<h2>Array-aware math</h2>
+<p><code>$sum</code>, <code>$avg</code>, <code>$min</code>, <code>$max</code> also accept an array field directly in <code>$project</code>:</p>
+<pre class="code">db.products.aggregate([
+  { $project: {
+      name: 1,
+      reviews: { $size: "$ratings" },
+      best:    { $max: "$ratings" },
+      worst:   { $min: "$ratings" },
+      avg:     { $round: [ { $avg: "$ratings" }, 2 ] }
+  } }
+])</pre>
+<div class="outlabel">Result (first)</div>
+<pre class="out">{ _id: 1, name: 'Espresso Machine', reviews: 3, best: 5, worst: 4, avg: 4.67 }</pre>
+<h2>Trigonometry</h2>
+<p><code>$sin</code>, <code>$cos</code>, <code>$tan</code>, <code>$asin</code>, <code>$acos</code>, <code>$atan</code>, <code>$atan2</code>, <code>$degreesToRadians</code>, <code>$radiansToDegrees</code> are also available.</p>
+</template>
+
+<template id="expr-string" data-group="Expression operators" data-title="Strings">
+<p class="lead">String operators clean, format and search text inside pipelines.</p>
+<pre class="code">db.customers.aggregate([
+  { $project: {
+      _id: 0,
+      upper:     { $toUpper: "$name" },
+      firstName: { $arrayElemAt: [ { $split: ["$name", " "] }, 0 ] },
+      initials:  { $concat: [ { $substrCP: ["$name", 0, 1] }, "." ] },
+      label:     { $concat: ["$name", " (", "$city", ")"] },
+      domain:    { $arrayElemAt: [ { $split: ["$email", "@"] }, 1 ] },
+      nameLen:   { $strLenCP: "$name" }
+  } }
+])</pre>
+<div class="outlabel">Result (first)</div>
+<pre class="out">{ upper: 'AISHA KHAN', firstName: 'Aisha', initials: 'A.', label: 'Aisha Khan (Dubai)', domain: 'example.com', nameLen: 10 }</pre>
+<div class="tbl"><table>
+<tr><th>Operator</th><th>Example</th><th>Result</th></tr>
+<tr><td><code>$concat</code></td><td><code>{ $concat: ["Mongo", "DB"] }</code></td><td>"MongoDB"</td></tr>
+<tr><td><code>$toUpper</code> / <code>$toLower</code></td><td><code>{ $toLower: "ABC" }</code></td><td>"abc"</td></tr>
+<tr><td><code>$substrCP</code></td><td><code>{ $substrCP: ["Dubai", 0, 3] }</code></td><td>"Dub"</td></tr>
+<tr><td><code>$strLenCP</code></td><td><code>{ $strLenCP: "Seoul" }</code></td><td>5</td></tr>
+<tr><td><code>$split</code></td><td><code>{ $split: ["a-b-c", "-"] }</code></td><td>["a","b","c"]</td></tr>
+<tr><td><code>$trim</code> / <code>$ltrim</code> / <code>$rtrim</code></td><td><code>{ $trim: { input: "  hi  " } }</code></td><td>"hi"</td></tr>
+<tr><td><code>$indexOfCP</code></td><td><code>{ $indexOfCP: ["coffee", "f"] }</code></td><td>2</td></tr>
+<tr><td><code>$replaceOne</code></td><td><code>{ $replaceOne: { input: "a-a", find: "a", replacement: "b" } }</code></td><td>"b-a"</td></tr>
+<tr><td><code>$replaceAll</code></td><td><code>{ $replaceAll: { input: "a-a", find: "a", replacement: "b" } }</code></td><td>"b-b"</td></tr>
+<tr><td><code>$strcasecmp</code></td><td><code>{ $strcasecmp: ["abc", "ABC"] }</code></td><td>0 (equal)</td></tr>
+<tr><td><code>$regexMatch</code></td><td><code>{ $regexMatch: { input: "$name", regex: /^c/i } }</code></td><td>true / false</td></tr>
+<tr><td><code>$regexFind</code></td><td><code>{ $regexFind: { input: "$email", regex: /@(.+)/ } }</code></td><td>{ match, idx, captures }</td></tr>
+<tr><td><code>$regexFindAll</code></td><td><code>{ $regexFindAll: { input: "$name", regex: /[A-Z]/ } }</code></td><td>array of matches</td></tr>
+</table></div>
+<h2>Cleaning text</h2>
+<pre class="code">db.products.aggregate([
+  { $project: {
+      slug: { $replaceAll: { input: { $toLower: "$name" }, find: " ", replacement: "-" } },
+      isCoffee: { $regexMatch: { input: "$name", regex: "coffee|espresso", options: "i" } }
+  } }
+])</pre>
+<div class="outlabel">Result (first)</div>
+<pre class="out">{ _id: 1, slug: 'espresso-machine', isCoffee: true }</pre>
+<div class="note"><p>Use the <code>CP</code> (code point) versions, not <code>$substrBytes</code> or <code>$strLenBytes</code>, for text with Arabic, accented or emoji characters.</p></div>
+</template>
+
+<template id="expr-array" data-group="Expression operators" data-title="Arrays & sets">
+<p class="lead">Array expressions let you filter, transform and summarise arrays without <code>$unwind</code>.</p>
+<h2><code>$filter</code>, <code>$map</code>, <code>$reduce</code></h2>
+<pre class="code">db.orders.aggregate([
+  { $match: { _id: 104 } },
+  { $project: {
+      // keep only line items with qty above 1
+      bulkItems: { $filter: { input: "$items", as: "it", cond: { $gt: ["$$it.qty", 1] } } },
+
+      // turn each item into its line total
+      lineTotals: { $map: { input: "$items", as: "it", in: { $multiply: ["$$it.qty", "$$it.price"] } } },
+
+      // add them up
+      computedTotal: { $reduce: {
+          input: "$items", initialValue: 0,
+          in: { $add: ["$$value", { $multiply: ["$$this.qty", "$$this.price"] }] }
+      } }
+  } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 104,
+  bulkItems: [ { productId: 3, qty: 3, price: 18 } ],
+  lineTotals: [ 89, 54 ],
+  computedTotal: 143 }</pre>
+<h2>Accessing elements</h2>
+<div class="tbl"><table>
+<tr><th>Operator</th><th>Example</th><th>Result</th></tr>
+<tr><td><code>$size</code></td><td><code>{ $size: "$tags" }</code></td><td>number of elements</td></tr>
+<tr><td><code>$arrayElemAt</code></td><td><code>{ $arrayElemAt: ["$tags", -1] }</code></td><td>last element</td></tr>
+<tr><td><code>$first</code> / <code>$last</code></td><td><code>{ $first: "$ratings" }</code></td><td>first element</td></tr>
+<tr><td><code>$slice</code></td><td><code>{ $slice: ["$ratings", 2] }</code></td><td>first 2 elements</td></tr>
+<tr><td><code>$in</code></td><td><code>{ $in: ["coffee", "$tags"] }</code></td><td>true / false</td></tr>
+<tr><td><code>$indexOfArray</code></td><td><code>{ $indexOfArray: ["$tags", "wireless"] }</code></td><td>position or -1</td></tr>
+<tr><td><code>$isArray</code></td><td><code>{ $isArray: "$tags" }</code></td><td>true / false</td></tr>
+<tr><td><code>$concatArrays</code></td><td><code>{ $concatArrays: ["$tags", ["new"]] }</code></td><td>joined array</td></tr>
+<tr><td><code>$reverseArray</code></td><td><code>{ $reverseArray: "$ratings" }</code></td><td>reversed</td></tr>
+<tr><td><code>$sortArray</code></td><td><code>{ $sortArray: { input: "$ratings", sortBy: -1 } }</code></td><td>sorted</td></tr>
+<tr><td><code>$range</code></td><td><code>{ $range: [0, 10, 3] }</code></td><td>[0, 3, 6, 9]</td></tr>
+<tr><td><code>$zip</code></td><td><code>{ $zip: { inputs: [["a","b"], [1,2]] } }</code></td><td>[["a",1], ["b",2]]</td></tr>
+<tr><td><code>$maxN</code> / <code>$minN</code></td><td><code>{ $maxN: { n: 2, input: "$ratings" } }</code></td><td>two highest</td></tr>
+<tr><td><code>$objectToArray</code></td><td><code>{ $objectToArray: "$specs" }</code></td><td>[{k, v}, …]</td></tr>
+<tr><td><code>$arrayToObject</code></td><td><code>{ $arrayToObject: [[["a", 1]]] }</code></td><td>{ a: 1 }</td></tr>
+</table></div>
+<h3>Example: product ids in each order, and whether it includes coffee</h3>
+<pre class="code">db.orders.aggregate([
+  { $project: {
+      productIds: "$items.productId",                    // array of values from an array of docs
+      hasCoffee: { $in: [3, "$items.productId"] },
+      biggestLine: { $first: { $sortArray: { input: "$items", sortBy: { price: -1 } } } }
+  } }
+])</pre>
+<h3>Turning an object into rows</h3>
+<pre class="code">db.products.aggregate([
+  { $match: { _id: 1 } },
+  { $project: { spec: { $objectToArray: "$specs" } } },
+  { $unwind: "$spec" }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 1, spec: { k: 'brand', v: 'Brava' } }
+{ _id: 1, spec: { k: 'watts', v: 1350 } }</pre>
+<h2>Set operators</h2>
+<p>Treat arrays as sets (order and duplicates ignored).</p>
+<pre class="code">db.products.aggregate([
+  { $match: { _id: 1 } },
+  { $project: {
+      union:        { $setUnion: ["$tags", ["coffee", "barista"]] },
+      common:       { $setIntersection: ["$tags", ["coffee", "wireless"]] },
+      onlyInTags:   { $setDifference: ["$tags", ["coffee"]] },
+      isSubset:     { $setIsSubset: [["coffee"], "$tags"] },
+      sameSet:      { $setEquals: ["$tags", ["appliance", "coffee"]] },
+      allGood:      { $allElementsTrue: [ { $map: { input: "$ratings", in: { $gte: ["$$this", 4] } } } ] },
+      anyPerfect:   { $anyElementTrue: [ { $map: { input: "$ratings", in: { $eq: ["$$this", 5] } } } ] }
+  } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 1, union: ['appliance','barista','coffee'], common: ['coffee'], onlyInTags: ['appliance'],
+  isSubset: true, sameSet: true, allGood: true, anyPerfect: true }</pre>
+</template>
+
+<template id="expr-cond" data-group="Expression operators" data-title="Conditional, comparison & boolean">
+<p class="lead">Branching logic and comparisons inside expressions.</p>
+<h2><code>$cond</code></h2>
+<pre class="code">db.products.aggregate([
+  { $project: {
+      name: 1,
+      // long form
+      availability: { $cond: { if: { $gt: ["$stock", 0] }, then: "In stock", else: "Sold out" } },
+      // short form: [if, then, else]
+      priceBand: { $cond: [ { $gte: ["$price", 100] }, "premium", "standard" ] }
+  } }
+])</pre>
+<div class="outlabel">Result (first four)</div>
+<pre class="out">{ _id: 1, name: 'Espresso Machine', availability: 'In stock', priceBand: 'premium' }
+{ _id: 2, name: 'Chef Knife', availability: 'In stock', priceBand: 'standard' }
+{ _id: 3, name: 'Coffee Beans 1kg', availability: 'In stock', priceBand: 'standard' }
+{ _id: 4, name: 'Desk Lamp', availability: 'Sold out', priceBand: 'standard' }</pre>
+<h2><code>$switch</code></h2>
+<pre class="code">db.orders.aggregate([
+  { $project: {
+      total: 1,
+      size: { $switch: {
+          branches: [
+            { case: { $gte: ["$total", 250] }, then: "large" },
+            { case: { $gte: ["$total", 100] }, then: "medium" }
+          ],
+          default: "small"
+      } }
+  } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">101 large · 102 small · 103 medium · 104 medium · 105 small · 106 large</pre>
+<h2><code>$ifNull</code></h2>
+<pre class="code">db.products.aggregate([
+  { $project: { name: 1, brand: { $ifNull: ["$specs.brand", "Unbranded"] } } }
+])</pre>
+<div class="outlabel">Result (names → brand)</div>
+<pre class="out">Espresso Machine → Brava, Chef Knife → Kato, Coffee Beans 1kg → Unbranded, ...</pre>
+<h2>Comparison expressions</h2>
+<p>Inside expressions these take an <b>array</b> of two values, unlike query operators.</p>
+<div class="tbl"><table>
+<tr><th>Operator</th><th>Example</th><th>Result</th></tr>
+<tr><td><code>$eq</code> / <code>$ne</code></td><td><code>{ $eq: ["$status", "shipped"] }</code></td><td>true / false</td></tr>
+<tr><td><code>$gt</code> / <code>$gte</code></td><td><code>{ $gt: ["$price", "$cost"] }</code></td><td>true / false</td></tr>
+<tr><td><code>$lt</code> / <code>$lte</code></td><td><code>{ $lte: ["$stock", 10] }</code></td><td>true / false</td></tr>
+<tr><td><code>$cmp</code></td><td><code>{ $cmp: ["$price", 100] }</code></td><td>-1, 0 or 1</td></tr>
+</table></div>
+<h2>Boolean expressions</h2>
+<pre class="code">db.products.aggregate([
+  { $project: {
+      name: 1,
+      reorder: { $and: [ { $lt: ["$stock", 15] }, { $gt: ["$price", 40] } ] },
+      featured: { $or: [ { $in: ["coffee", "$tags"] }, { $gte: [ { $avg: "$ratings" }, 4.5 ] } ] },
+      notKitchen: { $not: [ { $eq: ["$category", "kitchen"] } ] }
+  } },
+  { $match: { reorder: true } }
+])</pre>
+<div class="outlabel">Result (names with reorder: true)</div>
+<pre class="out">Espresso Machine, Desk Lamp, Noise-Cancelling Headphones</pre>
+<h2>Counting with conditions</h2>
+<p>A common pattern: <code>$sum</code> of a <code>$cond</code> that returns 1 or 0.</p>
+<pre class="code">db.orders.aggregate([
+  { $group: {
+      _id: "$customerId",
+      shipped:   { $sum: { $cond: [ { $eq: ["$status", "shipped"] }, 1, 0 ] } },
+      delivered: { $sum: { $cond: [ { $eq: ["$status", "delivered"] }, 1, 0 ] } }
+  } },
+  { $sort: { _id: 1 } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 'c1', shipped: 1, delivered: 1 }
+{ _id: 'c2', shipped: 0, delivered: 1 }
+{ _id: 'c3', shipped: 1, delivered: 0 }
+{ _id: 'c4', shipped: 0, delivered: 0 }</pre>
+</template>
+
+<template id="expr-date" data-group="Expression operators" data-title="Dates">
+<p class="lead">MongoDB stores dates in UTC. Date operators extract parts, format, parse and do arithmetic, with optional time zones.</p>
+<h2>Extracting date parts</h2>
+<pre class="code">db.orders.aggregate([
+  { $match: { _id: 104 } },
+  { $project: {
+      year:      { $year: "$date" },
+      month:     { $month: "$date" },
+      day:       { $dayOfMonth: "$date" },
+      weekday:   { $dayOfWeek: "$date" },        // 1 = Sunday ... 7 = Saturday
+      dayOfYear: { $dayOfYear: "$date" },
+      week:      { $isoWeek: "$date" },
+      hour:      { $hour: { date: "$date", timezone: "Asia/Dubai" } }
+  } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 104, year: 2026, month: 2, day: 14, weekday: 7, dayOfYear: 45, week: 7, hour: 4 }</pre>
+<p>Also available: <code>$minute</code>, <code>$second</code>, <code>$millisecond</code>, <code>$week</code>, <code>$isoDayOfWeek</code>, <code>$isoWeekYear</code>.</p>
+<h2>Formatting and parsing</h2>
+<pre class="code">db.orders.aggregate([
+  { $project: {
+      pretty: { $dateToString: { format: "%d %b %Y", date: "$date" } },
+      iso:    { $dateToString: { format: "%Y-%m-%dT%H:%M:%S", date: "$date", timezone: "Asia/Dubai" } }
+  } }
+])
+
+// parse text into a Date
+db.aggregate([ { $documents: [ { s: "21/10/2026" } ] },
+  { $project: { d: { $dateFromString: { dateString: "$s", format: "%d/%m/%Y" } } } } ])
+
+// build a date from parts
+{ $dateFromParts: { year: 2026, month: 10, day: 21 } }
+// split a date into parts
+{ $dateToParts: { date: "$date" } }</pre>
+<div class="outlabel">Common format specifiers</div>
+<pre class="out">%Y year (2026)   %m month (01-12)   %d day (01-31)   %H hour   %M minute   %S second
+%b short month (Jan)   %B full month   %a short weekday   %j day of year   %u ISO weekday</pre>
+<h2>Date arithmetic</h2>
+<pre class="code">db.orders.aggregate([
+  { $project: {
+      dueBy:      { $dateAdd:      { startDate: "$date", unit: "day", amount: 14 } },
+      monthEarly: { $dateSubtract: { startDate: "$date", unit: "month", amount: 1 } },
+      ageDays:    { $dateDiff:     { startDate: "$date", endDate: "$$NOW", unit: "day" } },
+      monthStart: { $dateTrunc:    { date: "$date", unit: "month" } },
+      weekStart:  { $dateTrunc:    { date: "$date", unit: "week", startOfWeek: "monday" } }
+  } }
+])</pre>
+<h2>Filtering by date</h2>
+<pre class="code">// orders in February 2026
+db.orders.find({ date: { $gte: ISODate("2026-02-01"), $lt: ISODate("2026-03-01") } })
+
+// orders in the last 90 days
+db.orders.find({ $expr: { $gte: [ "$date", { $dateSubtract: { startDate: "$$NOW", unit: "day", amount: 90 } } ] } })
+
+// customers who joined in 2024 or earlier
+db.customers.find({ $expr: { $lte: [ { $year: "$joined" }, 2024 ] } })</pre>
+<div class="outlabel">Result</div>
+<pre class="out">February orders → 103, 104
+joined 2024 or earlier → Aisha Khan, Lena Park</pre>
+<h2>Weekly sales report</h2>
+<pre class="code">db.orders.aggregate([
+  { $match: { status: { $ne: "cancelled" } } },
+  { $group: {
+      _id: { $dateTrunc: { date: "$date", unit: "week", timezone: "Asia/Dubai" } },
+      revenue: { $sum: "$total" }
+  } },
+  { $sort: { _id: 1 } }
+])</pre>
+</template>
+
+<template id="expr-type" data-group="Expression operators" data-title="Types, objects & variables">
+<p class="lead">Convert between types, work with embedded objects, and define variables.</p>
+<h2>Type conversion</h2>
+<div class="tbl"><table>
+<tr><th>Operator</th><th>Example</th><th>Result</th></tr>
+<tr><td><code>$toString</code></td><td><code>{ $toString: 249 }</code></td><td>"249"</td></tr>
+<tr><td><code>$toInt</code> / <code>$toLong</code></td><td><code>{ $toInt: "42" }</code></td><td>42</td></tr>
+<tr><td><code>$toDouble</code></td><td><code>{ $toDouble: "4.5" }</code></td><td>4.5</td></tr>
+<tr><td><code>$toDecimal</code></td><td><code>{ $toDecimal: "19.99" }</code></td><td>Decimal128</td></tr>
+<tr><td><code>$toBool</code></td><td><code>{ $toBool: 0 }</code></td><td>false</td></tr>
+<tr><td><code>$toDate</code></td><td><code>{ $toDate: "2026-10-21" }</code></td><td>ISODate</td></tr>
+<tr><td><code>$toObjectId</code></td><td><code>{ $toObjectId: "$idString" }</code></td><td>ObjectId</td></tr>
+<tr><td><code>$type</code></td><td><code>{ $type: "$price" }</code></td><td>"int", "double", "string", …</td></tr>
+<tr><td><code>$isNumber</code></td><td><code>{ $isNumber: "$price" }</code></td><td>true / false</td></tr>
+</table></div>
+<h3><code>$convert</code> with error handling</h3>
+<pre class="code">db.imports.aggregate([
+  { $project: {
+      price: { $convert: { input: "$priceText", to: "double", onError: 0, onNull: 0 } }
+  } }
+])
+
+// fix a string field permanently
+db.imports.updateMany({ priceText: { $type: "string" } }, [
+  { $set: { price: { $toDouble: "$priceText" } } },
+  { $unset: "priceText" }
+])</pre>
+<h2>Object operators</h2>
+<pre class="code">db.products.aggregate([
+  { $match: { _id: 2 } },
+  { $project: {
+      // combine documents; later fields win
+      fullSpecs: { $mergeObjects: [ { brand: "Generic", warranty: "1y" }, "$specs" ] },
+      // read a field, even one with dots or $ in its name
+      brand: { $getField: { field: "brand", input: "$specs" } },
+      // write a field
+      tagged: { $setField: { field: "sku", input: "$specs", value: "KN-002" } }
+  } }
+])</pre>
+<div class="outlabel">Result</div>
+<pre class="out">{ _id: 2, fullSpecs: { brand: 'Kato', warranty: '1y' }, brand: 'Kato', tagged: { brand: 'Kato', sku: 'KN-002' } }</pre>
+<h2>Variables with <code>$let</code></h2>
+<pre class="code">db.orders.aggregate([
+  { $project: {
+      summary: { $let: {
+          vars: { subtotal: { $sum: { $map: { input: "$items", in: { $multiply: ["$$this.qty", "$$this.price"] } } } },
+                  vatRate: 0.05 },
+          in: { subtotal: "$$subtotal",
+                vat: { $round: [ { $multiply: ["$$subtotal", "$$vatRate"] }, 2 ] },
+                grand: { $round: [ { $multiply: ["$$subtotal", { $add: [1, "$$vatRate"] }] }, 2 ] } }
+      } }
+  } }
+])</pre>
+<div class="outlabel">Result (order 101)</div>
+<pre class="out">{ _id: 101, summary: { subtotal: 285, vat: 14.25, grand: 299.25 } }</pre>
+<h2>Miscellaneous</h2>
+<div class="tbl"><table>
+<tr><th>Operator</th><th>Purpose</th></tr>
+<tr><td><code>$literal</code></td><td>Return a value without parsing it as a field path or operator</td></tr>
+<tr><td><code>$rand</code></td><td>Random number between 0 and 1</td></tr>
+<tr><td><code>$sampleRate</code></td><td>Keep roughly a fraction of documents: <code>{ $match: { $sampleRate: 0.1 } }</code></td></tr>
+<tr><td><code>$function</code></td><td>Custom JavaScript (slow, use sparingly)</td></tr>
+<tr><td><code>$binarySize</code> / <code>$bsonSize</code></td><td>Size in bytes</td></tr>
+<tr><td><code>$tsSecond</code> / <code>$tsIncrement</code></td><td>Parts of a Timestamp value</td></tr>
+</table></div>
+</template>
+
+<!-- ADVANCED -->
+<template id="transactions" data-group="Beyond the basics" data-title="Transactions & change streams">
+<p class="lead">Multi-document transactions make several writes succeed or fail together. They need a replica set or sharded cluster (Atlas clusters qualify).</p>
+<h2>Transaction in mongosh</h2>
+<pre class="code">const session = db.getMongo().startSession()
+const shop = session.getDatabase("shop")
+
+session.startTransaction({ readConcern: { level: "snapshot" }, writeConcern: { w: "majority" } })
+try {
+  shop.orders.insertOne({ _id: 108, customerId: "c2", status: "pending",
+                          items: [ { productId: 6, qty: 1, price: 199 } ], total: 199 })
+  const r = shop.products.updateOne({ _id: 6, stock: { $gte: 1 } }, { $inc: { stock: -1 } })
+  if (r.modifiedCount === 0) throw new Error("Out of stock")
+  session.commitTransaction()
+  print("Order placed")
+} catch (e) {
+  session.abortTransaction()
+  print("Rolled back: " + e.message)
+} finally {
+  session.endSession()
+}</pre>
+<h2>Node.js driver equivalent</h2>
+<pre class="code">const session = client.startSession()
+try {
+  await session.withTransaction(async () =&gt; {
+    await orders.insertOne({ _id: 108, customerId: "c2", total: 199 }, { session })
+    await products.updateOne({ _id: 6 }, { $inc: { stock: -1 } }, { session })
+  })
+} finally {
+  await session.endSession()
+}</pre>
+<div class="note"><p>Keep transactions short (under 60 seconds by default). If you can design the data so a change touches one document, you don't need a transaction at all.</p></div>
+<h2>Change streams</h2>
+<p>Watch a collection for real-time inserts, updates and deletes.</p>
+<pre class="code">const stream = db.orders.watch([
+  { $match: { operationType: { $in: ["insert", "update"] } } }
+], { fullDocument: "updateLookup" })
+
+while (!stream.isClosed()) {
+  const change = stream.tryNext()
+  if (change) printjson(change)
+}</pre>
+<h2>Read and write concerns at a glance</h2>
+<div class="tbl"><table>
+<tr><th>Setting</th><th>Common values</th><th>Meaning</th></tr>
+<tr><td>writeConcern <code>w</code></td><td><code>1</code>, <code>"majority"</code></td><td>How many members confirm a write</td></tr>
+<tr><td>readConcern</td><td><code>"local"</code>, <code>"majority"</code>, <code>"snapshot"</code></td><td>How committed the data you read must be</td></tr>
+<tr><td>readPreference</td><td><code>primary</code>, <code>secondaryPreferred</code>, <code>nearest</code></td><td>Which member serves reads</td></tr>
+</table></div>
+</template>
+
+<template id="cheatsheet" data-group="Beyond the basics" data-title="SQL to MongoDB cheat sheet">
+<p class="lead">If you know SQL, this table maps common statements to their MongoDB equivalents.</p>
+<div class="tbl"><table>
+<tr><th>SQL</th><th>MongoDB</th></tr>
+<tr><td><code>SELECT * FROM products</code></td><td><code>db.products.find()</code></td></tr>
+<tr><td><code>SELECT name, price FROM products</code></td><td><code>db.products.find({}, { name: 1, price: 1, _id: 0 })</code></td></tr>
+<tr><td><code>WHERE price &gt; 100</code></td><td><code>find({ price: { $gt: 100 } })</code></td></tr>
+<tr><td><code>WHERE a = 1 AND b = 2</code></td><td><code>find({ a: 1, b: 2 })</code></td></tr>
+<tr><td><code>WHERE a = 1 OR b = 2</code></td><td><code>find({ $or: [ { a: 1 }, { b: 2 } ] })</code></td></tr>
+<tr><td><code>WHERE city IN ('Dubai','Milan')</code></td><td><code>find({ city: { $in: ["Dubai", "Milan"] } })</code></td></tr>
+<tr><td><code>WHERE name LIKE 'Co%'</code></td><td><code>find({ name: /^Co/ })</code></td></tr>
+<tr><td><code>WHERE email IS NULL</code></td><td><code>find({ email: null })</code></td></tr>
+<tr><td><code>ORDER BY price DESC LIMIT 5</code></td><td><code>find().sort({ price: -1 }).limit(5)</code></td></tr>
+<tr><td><code>LIMIT 10 OFFSET 20</code></td><td><code>find().skip(20).limit(10)</code></td></tr>
+<tr><td><code>SELECT COUNT(*)</code></td><td><code>countDocuments({})</code></td></tr>
+<tr><td><code>SELECT DISTINCT category</code></td><td><code>distinct("category")</code></td></tr>
+<tr><td><code>GROUP BY category</code> with <code>SUM</code></td><td><code>aggregate([ { $group: { _id: "$category", s: { $sum: "$price" } } } ])</code></td></tr>
+<tr><td><code>HAVING COUNT(*) &gt; 1</code></td><td><code>$group</code> then <code>{ $match: { count: { $gt: 1 } } }</code></td></tr>
+<tr><td><code>INNER JOIN customers ON ...</code></td><td><code>$lookup</code> then <code>$unwind</code></td></tr>
+<tr><td><code>LEFT JOIN</code></td><td><code>$lookup</code> then <code>$unwind</code> with <code>preserveNullAndEmptyArrays: true</code></td></tr>
+<tr><td><code>UNION ALL</code></td><td><code>$unionWith</code></td></tr>
+<tr><td><code>CASE WHEN ... END</code></td><td><code>$cond</code> or <code>$switch</code></td></tr>
+<tr><td><code>COALESCE(a, b)</code></td><td><code>$ifNull: ["$a", "$b"]</code></td></tr>
+<tr><td><code>ROW_NUMBER() OVER (...)</code></td><td><code>$setWindowFields</code> with <code>$documentNumber</code></td></tr>
+<tr><td><code>INSERT INTO ... VALUES</code></td><td><code>insertOne()</code> / <code>insertMany()</code></td></tr>
+<tr><td><code>UPDATE ... SET x = 1 WHERE ...</code></td><td><code>updateMany(filter, { $set: { x: 1 } })</code></td></tr>
+<tr><td><code>UPDATE ... SET n = n + 1</code></td><td><code>{ $inc: { n: 1 } }</code></td></tr>
+<tr><td><code>DELETE FROM ... WHERE ...</code></td><td><code>deleteMany(filter)</code></td></tr>
+<tr><td><code>TRUNCATE TABLE</code></td><td><code>deleteMany({})</code></td></tr>
+<tr><td><code>DROP TABLE</code></td><td><code>drop()</code></td></tr>
+<tr><td><code>CREATE INDEX</code></td><td><code>createIndex({ field: 1 })</code></td></tr>
+<tr><td><code>CREATE TABLE ... AS SELECT</code></td><td><code>aggregate([..., { $out: "newColl" }])</code></td></tr>
+</table></div>
+<h2>Operator families at a glance</h2>
+<div class="tbl"><table>
+<tr><th>Family</th><th>Operators</th></tr>
+<tr><td>Query: comparison</td><td><code>$eq $ne $gt $gte $lt $lte $in $nin</code></td></tr>
+<tr><td>Query: logical</td><td><code>$and $or $nor $not</code></td></tr>
+<tr><td>Query: element / eval</td><td><code>$exists $type $regex $expr $mod $text $jsonSchema $where</code></td></tr>
+<tr><td>Query: array</td><td><code>$all $elemMatch $size</code></td></tr>
+<tr><td>Update: fields</td><td><code>$set $unset $inc $mul $rename $min $max $currentDate $setOnInsert</code></td></tr>
+<tr><td>Update: arrays</td><td><code>$push $addToSet $pop $pull $pullAll $each $position $slice $sort $ $[] $[id]</code></td></tr>
+</table></div>
+</template>
+
+<template id="practice" data-group="Beyond the basics" data-title="Practice exercises">
+<p class="lead">Try each problem against the sample dataset before opening the solution. Reset the data first if you changed it on earlier pages.</p>
+<h2>Queries</h2>
+<details><summary>1. Find wireless products under 100, showing only name and price.</summary>
+<pre class="code">db.products.find(
+  { tags: "wireless", price: { $lt: 100 } },
+  { _id: 0, name: 1, price: 1 }
+)</pre>
+<pre class="out">{ name: 'Wireless Mouse', price: 29 }</pre></details>
+<details><summary>2. Find orders that include more than one unit of any product.</summary>
+<pre class="code">db.orders.find({ "items.qty": { $gt: 1 } }, { _id: 1 })</pre>
+<pre class="out">101, 102, 104</pre></details>
+<details><summary>3. Find products with at least one rating of 3 or lower.</summary>
+<pre class="code">db.products.find({ ratings: { $lte: 3 } }, { name: 1 })</pre>
+<pre class="out">Coffee Beans 1kg, Desk Lamp, Wireless Mouse</pre></details>
+<h2>Updates</h2>
+<details><summary>4. Add the tag "sale" to every electronics product without creating duplicates.</summary>
+<pre class="code">db.products.updateMany({ category: "electronics" }, { $addToSet: { tags: "sale" } })</pre></details>
+<details><summary>5. In order 106, set the qty of product 5 to 3 and recompute the order total.</summary>
+<pre class="code">db.orders.updateOne({ _id: 106, "items.productId": 5 }, { $set: { "items.$.qty": 3 } })
+db.orders.updateOne({ _id: 106 }, [
+  { $set: { total: { $sum: { $map: { input: "$items", in: { $multiply: ["$$this.qty", "$$this.price"] } } } } } }
+])</pre>
+<pre class="out">total becomes 249 + 87 = 336</pre></details>
+<h2>Aggregation</h2>
+<details><summary>6. Revenue per city (join orders to customers, ignore cancelled).</summary>
+<pre class="code">db.orders.aggregate([
+  { $match: { status: { $ne: "cancelled" } } },
+  { $lookup: { from: "customers", localField: "customerId", foreignField: "_id", as: "c" } },
+  { $unwind: "$c" },
+  { $group: { _id: "$c.city", revenue: { $sum: "$total" } } },
+  { $sort: { revenue: -1 } }
+])</pre>
+<pre class="out">{ _id: 'Dubai', revenue: 484 }
+{ _id: 'Seoul', revenue: 421 }
+{ _id: 'Milan', revenue: 58 }</pre></details>
+<details><summary>7. Sales by product category, using product names from the products collection.</summary>
+<pre class="code">db.orders.aggregate([
+  { $match: { status: { $ne: "cancelled" } } },
+  { $unwind: "$items" },
+  { $lookup: { from: "products", localField: "items.productId", foreignField: "_id", as: "p" } },
+  { $unwind: "$p" },
+  { $group: { _id: "$p.category", sales: { $sum: { $multiply: ["$items.qty", "$items.price"] } } } },
+  { $sort: { sales: -1 } }
+])</pre>
+<pre class="out">{ _id: 'kitchen', sales: 587 }
+{ _id: 'electronics', sales: 286 }
+{ _id: 'grocery', sales: 90 }</pre></details>
+<details><summary>8. For each customer, show their name, number of orders and their most recent order date. Include customers with no orders.</summary>
+<pre class="code">db.customers.aggregate([
+  { $lookup: { from: "orders", localField: "_id", foreignField: "customerId", as: "o" } },
+  { $project: {
+      _id: 0, name: 1,
+      orders: { $size: "$o" },
+      lastOrder: { $max: "$o.date" }
+  } },
+  { $sort: { orders: -1, name: 1 } }
+])</pre>
+<pre class="out">{ name: 'Aisha Khan',  orders: 2, lastOrder: ISODate('2026-02-02') }
+{ name: 'Lena Park',   orders: 2, lastOrder: ISODate('2026-03-09') }
+{ name: 'Marco Rossi', orders: 1, lastOrder: ISODate('2026-01-18') }
+{ name: 'Omar Haddad', orders: 1, lastOrder: ISODate('2026-03-01') }</pre></details>
+<details><summary>9. List the two highest-rated products (by average rating) with their average rounded to 1 decimal.</summary>
+<pre class="code">db.products.aggregate([
+  { $set: { avg: { $avg: "$ratings" } } },
+  { $sort: { avg: -1 } },
+  { $limit: 2 },
+  { $project: { _id: 0, name: 1, avg: { $round: ["$avg", 1] } } }
+])</pre>
+<pre class="out">{ name: 'Chef Knife', avg: 4.8 }
+{ name: 'Espresso Machine', avg: 4.7 }</pre></details>
+<div class="note"><p>Next steps: the official manual at <a href="https://www.mongodb.com/docs/manual/" target="_blank" rel="noopener">mongodb.com/docs/manual</a> has the full operator reference, and MongoDB University offers free courses.</p></div>
+</template>
+
+<script>
+(function(){
+  const tpls = [...document.querySelectorAll("template[id]")];
+  const pages = tpls.map((t, i) => ({ id: t.id, title: t.dataset.title, group: t.dataset.group, tpl: t, n: i + 1,
+    text: (t.dataset.title + " " + t.content.textContent).toLowerCase() }));
+  const nav = document.getElementById("nav"), page = document.getElementById("page"),
+        q = document.getElementById("q"), side = document.getElementById("side"), toggle = document.getElementById("toggle");
+
+  const KW = new Set(["db","true","false","null","const","let","new","return","function","try","catch","finally","if","throw","await","async","while","use","show","print","printjson"]);
+  const TYPES = new Set(["ISODate","ObjectId","NumberDecimal","NumberLong","Date","Error"]);
+  function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function hl(src){
+    const re = /(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|(\$\$?[A-Za-z_][\w]*(?:\[[^\]]*\])?)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_]\w*)/g;
+    let out = "", last = 0, m;
+    while ((m = re.exec(src))) {
+      out += esc(src.slice(last, m.index));
+      const s = m[0];
+      if (m[1]) out += '<span class="t-com">' + esc(s) + "</span>";
+      else if (m[2]) out += '<span class="' + (/^["']\$/.test(s) ? "t-field" : "t-str") + '">' + esc(s) + "</span>";
+      else if (m[3]) out += '<span class="t-op">' + esc(s) + "</span>";
+      else if (m[4]) out += '<span class="t-num">' + s + "</span>";
+      else {
+        const prev = src[m.index - 1], next = src.slice(re.lastIndex).match(/^\s*\(/);
+        if (KW.has(s)) out += '<span class="t-kw">' + s + "</span>";
+        else if (TYPES.has(s)) out += '<span class="t-fn">' + s + "</span>";
+        else if (prev === "." && next) out += '<span class="t-fn">' + s + "</span>";
+        else out += s;
+      }
+      last = re.lastIndex;
+    }
+    return out + esc(src.slice(last));
+  }
+
+  function buildNav(filter){
+    const f = (filter || "").trim().toLowerCase();
+    const shown = pages.filter(p => !f || p.text.includes(f));
+    const groups = [];
+    shown.forEach(p => { let g = groups.find(x => x.name === p.group); if (!g) groups.push(g = { name: p.group, items: [] }); g.items.push(p); });
+    nav.innerHTML = groups.map(g => '<div class="navgroup"><h4>' + esc(g.name) + "</h4>" +
+      g.items.map(p => '<a href="#' + p.id + '" data-id="' + p.id + '"><span class="n">' + String(p.n).padStart(2, "0") + "</span><span>" + esc(p.title) + "</span></a>").join("") + "</div>").join("")
+      || '<p class="empty">No page mentions “' + esc(filter) + '”.</p>';
+    markActive();
+  }
+  let current = pages[0].id;
+  function markActive(){ nav.querySelectorAll("a").forEach(a => a.classList.toggle("on", a.dataset.id === current)); }
+
+  function show(id, scroll){
+    const i = Math.max(0, pages.findIndex(p => p.id === id));
+    const p = pages[i]; current = p.id;
+    page.innerHTML = '<div class="crumb">' + esc(p.group) + " · " + p.n + " of " + pages.length + "</div><h1>" + esc(p.title) + "</h1>";
+    page.appendChild(p.tpl.content.cloneNode(true));
+    page.querySelectorAll("pre.code").forEach(pre => {
+      const raw = pre.textContent.replace(/^\n/, "");
+      pre.innerHTML = "<code>" + hl(raw) + "</code>";
+      const wrap = document.createElement("div"); wrap.className = "block";
+      pre.parentNode.insertBefore(wrap, pre); wrap.appendChild(pre);
+      const b = document.createElement("button"); b.type = "button"; b.className = "copy"; b.textContent = "Copy";
+      b.addEventListener("click", () => {
+        const done = () => { b.textContent = "Copied"; setTimeout(() => b.textContent = "Copy", 1400); };
+        try { navigator.clipboard.writeText(raw).then(done, () => selectText(pre, b)); } catch (e) { selectText(pre, b); }
+      });
+      wrap.appendChild(b);
+    });
+    const prev = pages[i - 1], next = pages[i + 1];
+    const pg = document.createElement("div"); pg.className = "pager";
+    pg.innerHTML = (prev ? '<a class="prev" href="#' + prev.id + '"><small>Previous</small>' + esc(prev.title) + "</a>" : "") +
+                   (next ? '<a class="next" href="#' + next.id + '"><small>Next</small>' + esc(next.title) + "</a>" : "");
+    page.appendChild(pg);
+    page.style.animation = "none"; void page.offsetWidth; page.style.animation = "";
+    markActive();
+    if (scroll) window.scrollTo(0, 0);
+    try { localStorage.setItem("mfg-page", p.id); } catch (e) {}
+  }
+  function selectText(el, b){ const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "Press Ctrl+C"; setTimeout(() => b.textContent = "Copy", 1800); }
+
+  function route(scroll){
+    const h = location.hash.slice(1);
+    let id = pages.some(p => p.id === h) ? h : null;
+    if (!id) { try { const s = localStorage.getItem("mfg-page"); if (pages.some(p => p.id === s)) id = s; } catch (e) {} }
+    show(id || pages[0].id, scroll);
+  }
+  nav.addEventListener("click", e => {
+    const a = e.target.closest("a[data-id]"); if (!a) return;
+    e.preventDefault(); location.hash = a.dataset.id;
+    if (window.matchMedia("(max-width:860px)").matches) { side.classList.add("closed"); toggle.setAttribute("aria-expanded", "false"); }
+  });
+  page.addEventListener("click", e => { const a = e.target.closest(".pager a"); if (!a) return; e.preventDefault(); location.hash = a.getAttribute("href").slice(1); });
+  window.addEventListener("hashchange", () => route(true));
+  q.addEventListener("input", () => buildNav(q.value));
+  toggle.addEventListener("click", () => { const open = side.classList.toggle("closed") === false; toggle.setAttribute("aria-expanded", String(open)); });
+  if (!window.matchMedia("(max-width:860px)").matches) side.classList.remove("closed");
+  buildNav("");
+  route(false);
+})();
+</script>
+
+</body></html>
