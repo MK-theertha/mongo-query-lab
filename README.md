@@ -1,7 +1,6 @@
 # mongo-query-lab
 
-A small, synthetic MongoDB dataset with practice questions, worked answers, and a quick-reference guide for preparing for MongoDB interviews.
-
+A small, synthetic MongoDB dataset with practice questions, worked answers, and a quick-reference guide.
 ## Contents
 - `PRACTICE_QUESTIONS.md` — the questions, grouped by topic (CRUD, aggregation, joins, schema design, …)
 - `answers.md` — worked `mongosh` solutions to every question (try the questions first)
